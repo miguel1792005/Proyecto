@@ -1,0 +1,1 @@
+void configPWM(uint16_t velocity);
