@@ -322,7 +322,7 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>2</wLevel>
+            <wLevel>0</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath></IncludePath>
+              <IncludePath>.\Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -386,7 +386,7 @@
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\main.c</FilePath>
+              <FilePath>.\Src\main.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -396,12 +396,12 @@
             <File>
               <FileName>PWM.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\PWM.c</FilePath>
+              <FilePath>.\Src\PWM.c</FilePath>
             </File>
             <File>
               <FileName>PWM.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\PWM.h</FilePath>
+              <FilePath>.\Inc\PWM.h</FilePath>
             </File>
           </Files>
         </Group>
