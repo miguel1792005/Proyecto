@@ -4,12 +4,20 @@
 #include "Fc_control_velocidad.h"
 #include "Fc_config_TIMER.h"
 #include "Fc_config_IRQ.h"
+#include 	"Fc_comunicacion_bluethoot.h"
+#define Frase_serial 9  
 
-char Frase[6]={'V','4','4','R','0','4'};
+char rx_buffer[Frase_serial]={0};		//Buffer recepción
+char Frase[6]={'V','4','4','R','0','4'};		//Prueba
+char Frase1_1[9]={0};		//Real comunication
+uint8_t rx_index=0;
+
 uint8_t puntero_frase=0;
 uint32_t pasos_motor1x2=0;
 uint32_t pasos_motor2x2=0;
 
+
+//__________________________________________IRQ______________________________________________
 void TIMER1_IRQHandler(){
 	if(LPC_TIM1->IR&((0x1<<4))){		//Interrupt?
 		LPC_TIM1->IR=(0x1<<4);		//Clear flag
@@ -22,11 +30,28 @@ void TIMER2_IRQHandler(){
 		pasos_motor2x2=LPC_TIM2->TC;
 	}
 }
+void UART3_IRQHandler(void) {
+	uint8_t indice_frase;
+	if((LPC_UART3->IIR&0xE)==(0x04)){		//At least 1 interruption is pending and recive data available RDA
+		rx_buffer[rx_index++]=LPC_UART3->RBR;		//Save the charapter on rx_buffer
+		if(rx_index>=Frase_serial){
+			rx_index=0;
+			for(indice_frase=0;indice_frase<Frase_serial;indice_frase++){
+				Frase1_1[indice_frase]=rx_buffer[indice_frase];		//Trasladamos a Frase1_1 la que usaremos en nuestro programa
+			}
+		}
+	}
+}
+//___________________________________________________________________________________________
+
 int main(){
+	//WE NEED A FUNCION TO SET THE PRIORITY AND SUBPRIORITY EACH INTERRUPTIONS
 	Fc_config_pines();
 	Fc_config_IRQ();
 	Fc_config_TIMER();
 	Fc_config_PWM();
+	Fc_comunicacion_bluethoot();
+	
 	while(1){
 		switch(Frase[puntero_frase]){
 			case 'V':		//Define speed
