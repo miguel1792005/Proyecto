@@ -403,6 +403,56 @@
               <FileType>5</FileType>
               <FilePath>.\Inc\PWM.h</FilePath>
             </File>
+            <File>
+              <FileName>Fc_config_IRQ.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_config_IRQ.c</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_config_pines.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_config_pines.c</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_config_PWM.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_config_PWM.c</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_config_TIMER.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_config_TIMER.c</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_control_velocidad.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_control_velocidad.c</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_config_IRQ.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_config_IRQ.h</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_config_pines.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_config_pines.h</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_config_TIMER.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_config_TIMER.h</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_config_PWM.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_config_PWM.h</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_control_velocidad.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_control_velocidad.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
