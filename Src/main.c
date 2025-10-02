@@ -4,7 +4,7 @@
 #include "Fc_control_velocidad.h"
 #include "Fc_config_TIMER.h"
 #include "Fc_config_IRQ.h"
-uint8_t f=0;
+uint8_t A=0;
 char Frase[6]={'V','4','4','R','0','4'};
 uint8_t puntero_frase=0;
 uint32_t pasos_motor1x2=0;
