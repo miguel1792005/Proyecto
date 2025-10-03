@@ -1,8 +1,8 @@
-#ifndef FC_COMUNICACION_BLUETHOOT
-#define FC_COMUNICACION_BLUETHOOT
+#ifndef FC_COMUNICACION_BLUETOOTH
+#define FC_COMUNICACION_BLUETOOTH
 
 #include <LPC17xx.h>
 
-void Fc_comunicacion_bluethoot(void);
+void Fc_comunicacion_bluetooth(void);
 
 #endif
