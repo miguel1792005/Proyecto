@@ -4,7 +4,7 @@
 #include "Fc_control_velocidad.h"
 #include "Fc_config_TIMER.h"
 #include "Fc_config_IRQ.h"
-#include 	"Fc_comunicacion_bluethoot.h"
+#include 	"Fc_comunicacion_bluetooth.h"
 #define Frase_serial 9  
 
 char rx_buffer[Frase_serial]={0};		//Buffer recepción

@@ -453,6 +453,16 @@
               <FileType>5</FileType>
               <FilePath>.\Inc\Fc_control_velocidad.h</FilePath>
             </File>
+            <File>
+              <FileName>Fc_comunicacion_bluetooth.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_comunicacion_bluetooth.c</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_comunicacion_bluetooth.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_comunicacion_bluetooth.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
