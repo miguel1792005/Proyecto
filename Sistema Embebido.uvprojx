@@ -424,11 +424,6 @@
               <FilePath>.\Src\Fc_config_TIMER.c</FilePath>
             </File>
             <File>
-              <FileName>Fc_control_velocidad.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Src\Fc_control_velocidad.c</FilePath>
-            </File>
-            <File>
               <FileName>Fc_config_IRQ.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Inc\Fc_config_IRQ.h</FilePath>
@@ -449,19 +444,24 @@
               <FilePath>.\Inc\Fc_config_PWM.h</FilePath>
             </File>
             <File>
-              <FileName>Fc_control_velocidad.h</FileName>
+              <FileName>Fc_speed_control.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Inc\Fc_control_velocidad.h</FilePath>
+              <FilePath>.\Inc\Fc_speed_control.h</FilePath>
             </File>
             <File>
-              <FileName>Fc_comunicacion_bluetooth.c</FileName>
+              <FileName>Fc_bluetooth_communication.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_bluetooth_communication.h</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_bluetooth_communication.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Src\Fc_comunicacion_bluetooth.c</FilePath>
+              <FilePath>.\Src\Fc_bluetooth_communication.c</FilePath>
             </File>
             <File>
-              <FileName>Fc_comunicacion_bluetooth.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Inc\Fc_comunicacion_bluetooth.h</FilePath>
+              <FileName>Fc_speed_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_speed_control.c</FilePath>
             </File>
           </Files>
         </Group>

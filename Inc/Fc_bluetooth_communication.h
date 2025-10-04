@@ -3,6 +3,6 @@
 
 #include <LPC17xx.h>
 
-void Fc_comunicacion_bluetooth(void);
+void Fc_bluetooth_communication(void);
 
 #endif
