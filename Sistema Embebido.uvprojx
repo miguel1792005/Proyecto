@@ -394,16 +394,6 @@
           <GroupName>functions</GroupName>
           <Files>
             <File>
-              <FileName>PWM.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Src\PWM.c</FilePath>
-            </File>
-            <File>
-              <FileName>PWM.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Inc\PWM.h</FilePath>
-            </File>
-            <File>
               <FileName>Fc_config_IRQ.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Src\Fc_config_IRQ.c</FilePath>

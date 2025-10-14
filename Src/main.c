@@ -16,6 +16,10 @@ uint8_t puntero_frase=0;
 uint32_t pasos_motor1x2=0;
 uint32_t pasos_motor2x2=0;
 
+uint8_t velocidad=50;
+uint8_t invertidor=1;
+char giro='V';
+
 
 //__________________________________________IRQ______________________________________________
 void TIMER1_IRQHandler(){
@@ -50,13 +54,18 @@ int main(){
 	Fc_config_IRQ();
 	Fc_config_TIMER();
 	Fc_config_PWM();
-	Fc_bluetooth_communication();
+	
+	
+	/*   Fc_bluetooth_communication();
 	Fc_pc_communication();
 	Fc_display();
 	Fc_ambient_sensor();
 	Fc_beep();
 	Fc_power_monitoring();
 	
+	*/
+	
+	/*
 	while(1){
 		switch(Frase[puntero_frase]){
 			case 'V':		//Define speed
@@ -71,9 +80,39 @@ int main(){
 			case 'A':		//Define forward movement
 				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x1<<16);	
 			break;
-			case 'R':		//Define recoil movement
+			case 'R':		//Define backwards movement
 				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x2<<16);	
-			break;		
+			break;
+
+
 		}
 	}
+	
+	*/
+	
+	
+	while(1){
+			switch(giro){
+			case 'V':		//Define speed
+				Fc_speed_control(velocidad);
+			break;
+			case 'D':		//Define left movement
+				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x1<<16);
+			break;
+			case 'I':		//Define right movement
+				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x2<<16);
+			break;
+			case 'A':		//Define forward movement
+				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x1<<16);	
+			break;
+			case 'R':		//Define backwards movement
+				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x2<<16);	
+			break;
+	
+
+	
+		
+	}
+}
+	
 }
