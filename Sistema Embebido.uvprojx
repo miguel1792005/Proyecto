@@ -453,6 +453,16 @@
               <FileType>1</FileType>
               <FilePath>.\Src\Fc_speed_control.c</FilePath>
             </File>
+            <File>
+              <FileName>calib.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\calib.c</FilePath>
+            </File>
+            <File>
+              <FileName>calib.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\calib.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

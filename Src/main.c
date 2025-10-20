@@ -5,6 +5,7 @@
 #include "Fc_config_TIMER.h"
 #include "Fc_config_IRQ.h"
 #include "Fc_bluetooth_communication.h"
+#include "calib.h"
 #define Frase_serial 9  
 
 char rx_buffer[Frase_serial]={0};		//Buffer recepción
@@ -109,7 +110,11 @@ int main(){
 				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x2<<16);	
 			break;
 	
-
+			if(pasos_motor1x2%10){
+				
+				calib(pasos_motor1x2, pasos_motor2x2);
+				
+			}
 	
 		
 	}
