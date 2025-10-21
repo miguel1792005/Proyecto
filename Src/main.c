@@ -26,13 +26,14 @@ char giro='V';
 void TIMER1_IRQHandler(){
 	if(LPC_TIM1->IR&((0x1<<4))){		//Interrupt?
 		LPC_TIM1->IR=(0x1<<4);		//Clear flag
-		pasos_motor1x2=LPC_TIM1->TC;
+		pasos_motor1x2=LPC_TIM1->TC;   //if(phase1 ??)  {pasos_motor1x2++    flag1=1}  else  { pasos_motor1x2--   flag1=2}
+		
 	}
 }
 void TIMER2_IRQHandler(){
 	if(LPC_TIM2->IR&((0x1<<4))){		//Interrupt?
 		LPC_TIM2->IR=(0x1<<4);		//Clear flag
-		pasos_motor2x2=LPC_TIM2->TC;
+		pasos_motor2x2=LPC_TIM2->TC;    //if(phase2 ??)  {pasos_motor2x2++    flag2=1}  else  { pasos_motor2x2--   flag2=2}
 	}
 }
 void UART3_IRQHandler(void) {
@@ -93,7 +94,9 @@ int main(){
 	
 	
 	while(1){
+		
 			switch(giro){
+			
 			case 'V':		//Define speed
 				Fc_speed_control(velocidad);
 			break;
@@ -110,14 +113,33 @@ int main(){
 				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x2<<16);	
 			break;
 	
+			}
+			
 			if(pasos_motor1x2%10){
 				
 				calib(pasos_motor1x2, pasos_motor2x2);
 				
 			}
-	
-		
+			
+			/*
+			if(flag1==1 && flag2==1){
+				
+				paso++;
+			
+				distanceA=(paso/11)*2*pi*33.5;  //distance in mm
+				
+			}
+			
+			else if(flag1==2 && flag2==2){
+			
+				paso--;
+			
+				distanceR=(paso/11)*2*pi*33.5;
+			
+			}
+			*/
+			
 	}
-}
 	
 }
+
