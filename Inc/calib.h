@@ -3,6 +3,6 @@
 
 #include <LPC17xx.h>
 
-void calib(float gain1,float gain2, uint32_t velocidad);
+void calib(uint8_t pasos_motor1x2,uint8_t pasos_motor2x2);
 
 #endif
