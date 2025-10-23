@@ -463,6 +463,16 @@
               <FileType>5</FileType>
               <FilePath>.\Inc\calib.h</FilePath>
             </File>
+            <File>
+              <FileName>set_distance.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\set_distance.h</FilePath>
+            </File>
+            <File>
+              <FileName>set_distance.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\set_distance.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

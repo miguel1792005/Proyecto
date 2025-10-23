@@ -6,6 +6,7 @@
 #include "Fc_config_IRQ.h"
 #include "Fc_bluetooth_communication.h"
 #include "calib.h"
+#include "set_distance.h"
 #define Frase_serial 9  
 
 char rx_buffer[Frase_serial]={0};		//Buffer recepción
@@ -23,31 +24,34 @@ char giro='V';
 float gain1=1;
 float gain2=1;
 
+uint8_t distanciaprueba=40; // variable de distancia de prueba en 40cm aprox 2 vuelta aprox 44 pulsos
+
 
 //__________________________________________IRQ______________________________________________
 void TIMER1_IRQHandler(){
-	//if(LPC_TIM1->IR&((0x1<<4))){		//Interrupt?
-		LPC_TIM1->IR=(0x1<<4);		//Clear flag
-		pasos_motor1x2++;   //if(phase1 ??)  {pasos_motor1x2++    flag1=1}  else  { pasos_motor1x2--   flag1=2}
+	if(LPC_TIM1->IR&((0x1<<0))){		//Interrupt MR0
+		LPC_TIM1->IR=(0x1<<0);		//Clear flag of MR0
 		
 		
-	
-	
-	
-		if(!(0 <= (pasos_motor1x2-pasos_motor2x2) && (pasos_motor1x2-pasos_motor2x2) <= 2)){ //Comprobacion de que uno va mas deprisa
+		if(!(0 <= ((LPC_TIM1->TC)-(LPC_TIM2->TC)) && ((LPC_TIM1->TC)-(LPC_TIM2->TC)) <= 2)){ //Comprobacion de que uno va mas deprisa
 				
-			if(pasos_motor1x2 > pasos_motor2x2){ // Motor 1 mas rapido
+			if((LPC_TIM1->TC) > (LPC_TIM2->TC)){ // Motor 1 mas rapido
 				
-				gain2=gain2*1.01; // Incremento de la ganancia del 2
 				gain1=gain1*0.99; // Decremento de la ganancia del 1
-				
+
+				if(LPC_PWM1->MR4<LPC_PWM1->MR0){ // Comprobacion de que el tiempo en alto es menor que el periodo
+					gain2=gain2*1.01; // Incremento de la ganancia del 2
+				}
 			}
 			
-			else if(pasos_motor2x2 > pasos_motor1x2){ // Motor 2 mas rapido
+			else if((LPC_TIM2->TC) > (LPC_TIM1->TC)){ // Motor 2 mas rapido
 			
-				gain1=gain1*1.01; // Incremento de la ganancia del 1
 				gain2=gain2*0.99; // Decremento de la ganancia del 2
-								
+					
+				if(LPC_PWM1->MR2<LPC_PWM1->MR0){ // Comprobacion de que el tiempo en alto es menor que el periodo
+					gain1=gain1*1.01; // Incremento de la ganancia del 1
+				}
+				
 			}
 		
 			calib(gain1,gain2,velocidad); // Funcion calibracion
@@ -55,12 +59,18 @@ void TIMER1_IRQHandler(){
 			
 		}
 		
-	//}
+		LPC_TIM1->MR0 += 22; // Set MR0 according 1 revolution to calibrate the speed
+		
+		
+	}
 }
 void TIMER2_IRQHandler(){
-	if(LPC_TIM2->IR&((0x1<<4))){		//Interrupt?
-		LPC_TIM2->IR=(0x1<<4);		//Clear flag
-		pasos_motor2x2++;    //if(phase2 ??)  {pasos_motor2x2++    flag2=1}  else  { pasos_motor2x2--   flag2=2}
+	if(LPC_TIM2->IR&((0x1<<0))){		//Interrupt MR0
+		LPC_TIM2->IR=(0x1<<0);		//Clear flag of MR0
+
+		LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)));// Parada de prueba
+		// Pasar a siguiente instruccion
+
 	}
 }
 void UART3_IRQHandler(void) {
@@ -119,6 +129,8 @@ int main(){
 	
 	*/
 	
+	
+	set_distance(distanciaprueba);
 	
 	while(1){
 		
