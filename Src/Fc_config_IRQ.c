@@ -1,6 +1,7 @@
 #include <LPC17xx.h>
 
 void Fc_config_IRQ(void){
+	
 	//Prigroup
 	NVIC_SetPriorityGrouping(2);
 	//Priority
@@ -9,4 +10,5 @@ void Fc_config_IRQ(void){
 	//Enable
 	NVIC_EnableIRQ(TIMER1_IRQn);
 	NVIC_EnableIRQ(TIMER2_IRQn);
+	
 }
