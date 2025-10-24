@@ -3,6 +3,6 @@
 
 #include <LPC17xx.h>
 
-void set_distance(uint8_t D);
+void set_distance(uint16_t D);
 
 #endif
