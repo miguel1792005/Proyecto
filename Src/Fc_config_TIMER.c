@@ -12,7 +12,7 @@ void Fc_config_TIMER(void){
 	LPC_TIM2->CTCR=(LPC_TIM1->CTCR&~(0xF))|(0x3);		//Increment TC with both edges (counter mode) and used CAP2.0 pin input
 	LPC_TIM2->TCR=(0x1);		//Timer counter and prescaler enable to counting
 	
-	LPC_TIM1->MR0 = 10; // Set MR0 according 1/11 revolution to calibrate the speed
+	LPC_TIM1->MR0 = 2; // Set MR0 according 1/11 revolution to calibrate the speed
 	LPC_TIM1->MCR = (0x1 << 0); // Interrupt on MR0 match
 	
 }
