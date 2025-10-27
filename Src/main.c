@@ -9,70 +9,93 @@
 #include "set_distance.h"
 #define size_of_array 9
 
-char rx_buffer[size_of_array]={0};		// Reception Buffer 
-char data[size_of_array]={0};		// Real comunication
-uint8_t rx_index=0;
-uint8_t pointer_to_data=0; // Pointer to the array of data
+//SE DEBE MEJORAR LA MR0 DE AMBOS TEMPORIZADORES LA FUNCION CALIB Y LA FUNCION SPEED SE AÑADIO UNA GANANCIA PARA CONTRARRESTAR LAS GRANDES DIFERENCIAS
+//ENTRE AMBOS MOTORES ACTUALES
 
+volatile char rx_buffer[size_of_array]={0};		// Reception Buffer 
+volatile char data[size_of_array]={0};		// Real comunication
+volatile uint8_t rx_index=0;
+volatile uint8_t pointer_to_data=0; // Pointer to the array of data
+volatile uint8_t enclav=1;
 
-uint8_t speed;
-uint16_t distance;
-uint16_t angle;
-uint8_t flag=1; // variable to continue reading code
-float gaini=1; // variable to calibrate (increase)
-float gaind=1; // Variable to calibrate (decrease)
+volatile uint8_t speed;
+volatile uint16_t distance;
+volatile uint16_t angle;
+
+volatile float gain1=1;
+volatile float gain2=1;
+
+volatile uint32_t speed1=0;		//speed motor1
+volatile uint32_t speed2=0;		//speed motor2
+volatile uint32_t CAP1_0=0;		//Value of last cap
+volatile uint32_t CAP2_0=0;		//Value of last cap
 
 //__________________________________________IRQ______________________________________________
 void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front of the car, PWM1.2 P1.20 / CAP1.0 P1.18 / Every 2 edges to calibrate
-	if(LPC_TIM1->IR&((0x1<<0))){		//Interrupt MR0
-		LPC_TIM1->IR=(0x1<<0);		//Clear flag of MR0 interrupt
-			
-		if(!(0 <= ((LPC_TIM1->TC)-(LPC_TIM2->TC)) && ((LPC_TIM1->TC)-(LPC_TIM2->TC)) <= 2)){ // Motor 1 has moved 2 steps while Motor 2 has not moved
-			if((LPC_TIM1->TC) > (LPC_TIM2->TC) ){ // Motor 1 faster than Motor 2
-				if((LPC_PWM1->MR4*gaini*1.0001)<LPC_PWM1->MR0){ // Check that new tH of Motor 2 is less than period of PWM
-					gaini=gaini*1.0001; // Increase gain of Motor 2 -> Increase tH
-					gaind=gaind*1.0001; // Increase gain of decrease
-					calib(gaini,speed); // Calibration function
-				}
-				if((LPC_PWM1->MR4)>LPC_PWM1->MR0){ // Security function in case new tH is greater than period of PWM
-					gaind=gaind*0.9999; // Reduce gain of Motor 2 -> Decrease tH
-					gaini=gaini*0.9999; // Reduce gain of increase
-					calib(gaind,speed); // Calibration function
-				}
-				
-			}
+
+	if(LPC_TIM1->IR&((0x1<<4))){		//Interrupt CAP0 (Calib speed)
+		LPC_TIM1->IR=(0x1<<4);		//Clear flag of CAP0 interrupt
+		
+		speed1=LPC_TIM1->CR0-CAP1_0;
+		CAP1_0=LPC_TIM1->CR0;
+		
+		if((speed1)<(speed2)){
+			gain1=gain1*0.9999;
+			gain2=gain2*1.0001;
+			calib(gain1,gain2,speed);
 		}
-		
-		/* Comprueba esto........................*/
-		if(!(0 <= ((LPC_TIM2->TC)-(LPC_TIM1->TC)) && ((LPC_TIM2->TC)-(LPC_TIM1->TC)) <= 2)){ // Motor 2 has moved 2 steps while Motor 1 has not moved
-			if((LPC_TIM2->TC) > (LPC_TIM1->TC) ){ // Motor 2 faster than Motor 1
-				if((LPC_PWM1->MR4)<LPC_PWM1->MR0){ // Check that tH of Motor 2 is less than period of PWM
-					gaind=gaind*0.9999; // Decrease gain of Motor 2 -> Decrease tH
-					gaini=gaini*0.9999; // Reduce gain of increase
-					calib(gaind,speed); // Calibration function
-				}
-				if((LPC_PWM1->MR4)>LPC_PWM1->MR0){ // Security function in case tH is greater than period of PWM
-					gaind=gaind*0.999; // Reduce a little bit more, so that tH<T, the gain of Motor 2 -> Decrease tH
-					gaini=gaini*0.999; // Reduce gain of increase
-					calib(gaind,speed); // Calibration function
-				}
-				
-			}
+		if((speed1)>(speed2)){
+			gain1=gain1*1.0001;
+			gain2=gain2*0.9999;
+			calib(gain1,gain2,speed);
 		}
-		
-		
-		
-		LPC_TIM1->MR0 += 2; // Set MR0 according 1/11 revolution to calibrate the speed	
+		//LPC_TIM1->TC=0;
 	}
+	
+	
 }
 void TIMER2_IRQHandler(){	//Motor (2) Slowest, left side if you see the front of the car, PWM1.4 P1.23 / CAP2.0 P0.4 / When distance is completed
-	if(LPC_TIM2->IR&((0x1<<0))){		//Interrupt MR0
-		LPC_TIM2->IR=(0x1<<0);		//Clear flag of MR0
+	
+	if(LPC_TIM2->IR&((0x1<<4))){		//Interrupt CAP0	(Calib speed)
+		LPC_TIM2->IR=(0x1<<4);		//Clear flag of CAP0 interrupt
 		
-		LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16))); // Stop
-		flag=1; // Next instruction
+		speed2=LPC_TIM2->CR0-CAP2_0;
+		CAP2_0=LPC_TIM2->CR0;
+		
+		if((speed1)<(speed2)){
+			gain1=gain1*0.9999;
+			gain2=gain2*1.0001;
+			calib(gain1,gain2,speed);
+		}
+		if((speed1)>(speed2)){
+			gain1=gain1*1.0001;
+			gain2=gain2*0.9999;
+			calib(gain1,gain2,speed);
+		}
+		//LPC_TIM2->TC=0;
+	}
+	
+}
 
-		pointer_to_data+=3; // Move the pointer to next instruction
+void TIMER3_IRQHandler(){	//Reached the value of distance
+	if(LPC_TIM3->IR&((0x1))){		//Interrupt MR0 (The distance it was reached)
+		LPC_TIM3->IR=(0x1);		//Clear flag of MR0 interrupt
+		
+		LPC_TIM1->TC=0;
+		LPC_TIM2->TC=0;
+		LPC_TIM3->TC=0;
+		
+		LPC_TIM1->TCR=(0x1<<1);		//Reset Timer1 counter and prescaler and disable
+		LPC_TIM2->TCR=(0x1<<1);		//Reset Timer2 counter and prescaler and disable
+		LPC_TIM3->TCR=(0x1<<1);		//Reset Timer3 counter and prescaler and disable
+		
+		NVIC_DisableIRQ(TIMER1_IRQn);
+		NVIC_DisableIRQ(TIMER2_IRQn);
+		
+		LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16))); // Security Stop
+		pointer_to_data+=3;
+		enclav=1;
+
 	}
 }
 void UART3_IRQHandler(void){
@@ -97,40 +120,60 @@ int main(){
   Fc_bluetooth_communication();
 	
 	while(1){
-		if(flag==1){
+		if(enclav==1){
 			switch(data[pointer_to_data]){
-			
+
 			case 'V':		//Define speed
 				speed=(((uint8_t)(data[pointer_to_data+1]-'0'))*10+(uint8_t)(data[pointer_to_data+2]-'0'));
 				pointer_to_data=pointer_to_data+Fc_speed_control(speed);			
 			break;
 			
 			case 'D':		//Define right movement
-				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x1<<16);
 				angle=(uint16_t)((((uint16_t)(data[pointer_to_data+1]-'0'))*10+(uint16_t)(data[pointer_to_data+2]-'0')));
 				set_distance(8*((angle)*(3.141592654/180)));
-				flag=0;
+				LPC_TIM1->TCR=(0x1);		//Timer counter and prescaler enable to counting
+				LPC_TIM2->TCR=(0x1);		//Timer counter and prescaler enable to counting
+				NVIC_EnableIRQ(TIMER1_IRQn);
+				NVIC_EnableIRQ(TIMER2_IRQn);
+				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x1<<16);
+				enclav=0;
+
 			break;
 			
 			case 'I':		//Define left movement
-				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x2<<16);
 				angle=(uint16_t)((((uint16_t)(data[pointer_to_data+1]-'0'))*10+(uint16_t)(data[pointer_to_data+2]-'0')));
 				set_distance(8*((angle)*(3.141592654/180)));
-				flag=0;
+				LPC_TIM1->TCR=(0x1);		//Timer counter and prescaler enable to counting
+				LPC_TIM2->TCR=(0x1);		//Timer counter and prescaler enable to counting
+				NVIC_EnableIRQ(TIMER1_IRQn);
+				NVIC_EnableIRQ(TIMER2_IRQn);
+				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x2<<16);
+				enclav=0;
+
 			break;
 			
 			case 'A':		//Define forward movement
-				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x1<<16);	
 				distance=(uint16_t)((((uint16_t)(data[pointer_to_data+1]-'0'))*10+(uint16_t)(data[pointer_to_data+2]-'0')));
 				set_distance(distance);
-				flag=0;
+				LPC_TIM1->TCR=(0x1);		//Timer counter and prescaler enable to counting
+				LPC_TIM2->TCR=(0x1);		//Timer counter and prescaler enable to counting
+				NVIC_EnableIRQ(TIMER1_IRQn);
+				NVIC_EnableIRQ(TIMER2_IRQn);
+				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x1<<16);
+				enclav=0;
+
 			break;
 			
 			case 'R':		//Define backwards movement
-				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x2<<16);
 				distance=(uint16_t)((((uint16_t)(data[pointer_to_data+1]-'0'))*10+(uint16_t)(data[pointer_to_data+2]-'0')));
 				set_distance(distance);
-				flag=0;
+				LPC_TIM1->TCR=(0x1);		//Timer counter and prescaler enable to counting
+				LPC_TIM2->TCR=(0x1);		//Timer counter and prescaler enable to counting
+				NVIC_EnableIRQ(TIMER1_IRQn);
+				NVIC_EnableIRQ(TIMER2_IRQn);
+				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x2<<16);
+				enclav=0;
+
 			break;
 			
 			default:
@@ -138,7 +181,7 @@ int main(){
 			break;
 			
 			}
-		}	
+		}
 	}
 }
 
