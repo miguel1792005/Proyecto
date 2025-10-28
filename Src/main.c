@@ -7,7 +7,12 @@
 #include "Fc_bluetooth_communication.h"
 #include "calib.h"
 #include "set_distance.h"
+
 #define size_of_array 9
+
+#define PI 3.1415926535897932384626433832795
+#define K2 8*(PI/180)
+
 
 //SE DEBE MEJORAR LA MR0 DE AMBOS TEMPORIZADORES LA FUNCION CALIB Y LA FUNCION SPEED SE AÑADIO UNA GANANCIA PARA CONTRARRESTAR LAS GRANDES DIFERENCIAS
 //ENTRE AMBOS MOTORES ACTUALES
@@ -135,7 +140,7 @@ int main(){
 			
 			case 'D':		//Define right movement
 				angle=(uint16_t)((((uint16_t)(data[pointer_to_data+1]-'0'))*10+(uint16_t)(data[pointer_to_data+2]-'0')));
-				set_distance(8*((angle)*(3.141592654/180)));
+				set_distance(K2*angle);
 				LPC_TIM1->TCR=(0x1);		//Timer counter and prescaler enable to counting
 				LPC_TIM2->TCR=(0x1);		//Timer counter and prescaler enable to counting
 				NVIC_EnableIRQ(TIMER1_IRQn);
@@ -147,7 +152,7 @@ int main(){
 			
 			case 'I':		//Define left movement
 				angle=(uint16_t)((((uint16_t)(data[pointer_to_data+1]-'0'))*10+(uint16_t)(data[pointer_to_data+2]-'0')));
-				set_distance(8*((angle)*(3.141592654/180)));
+				set_distance(K2*angle);
 				LPC_TIM1->TCR=(0x1);		//Timer counter and prescaler enable to counting
 				LPC_TIM2->TCR=(0x1);		//Timer counter and prescaler enable to counting
 				NVIC_EnableIRQ(TIMER1_IRQn);
