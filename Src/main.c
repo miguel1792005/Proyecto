@@ -49,7 +49,6 @@ void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front o
 			gain2=gain2*0.9999;
 			calib(gain1,gain2,speed);
 		}
-		//LPC_TIM1->TC=0;
 	}
 	
 	
@@ -72,7 +71,6 @@ void TIMER2_IRQHandler(){	//Motor (2) Slowest, left side if you see the front of
 			gain2=gain2*0.9999;
 			calib(gain1,gain2,speed);
 		}
-		//LPC_TIM2->TC=0;
 	}
 	
 }
@@ -84,6 +82,13 @@ void TIMER3_IRQHandler(){	//Reached the value of distance
 		LPC_TIM1->TC=0;
 		LPC_TIM2->TC=0;
 		LPC_TIM3->TC=0;
+		
+		LPC_TIM1->PC=0;
+		LPC_TIM2->PC=0;
+		
+		CAP1_0=0;		
+		CAP2_0=0;		
+		
 		
 		LPC_TIM1->TCR=(0x1<<1);		//Reset Timer1 counter and prescaler and disable
 		LPC_TIM2->TCR=(0x1<<1);		//Reset Timer2 counter and prescaler and disable
