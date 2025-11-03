@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\Inc;.\Inc</IncludePath>
+              <IncludePath>.\Inc;.\Inc;.\Src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -472,6 +472,26 @@
               <FileName>set_distance.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Src\set_distance.c</FilePath>
+            </File>
+            <File>
+              <FileName>sound.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\sound.c</FilePath>
+            </File>
+            <File>
+              <FileName>dac_cfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\dac_cfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>dac_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\dac_cfg.h</FilePath>
+            </File>
+            <File>
+              <FileName>sound.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\sound.h</FilePath>
             </File>
           </Files>
         </Group>

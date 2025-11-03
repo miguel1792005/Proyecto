@@ -1,4 +1,7 @@
 #include <LPC17xx.h>
+#include <math.h>
+
+
 #include "Fc_config_pines.h"
 #include "Fc_config_PWM.h"
 #include "Fc_speed_control.h"
@@ -7,11 +10,24 @@
 #include "Fc_bluetooth_communication.h"
 #include "calib.h"
 #include "set_distance.h"
+#include "sound.h"
+#include "dac_cfg.h"
+
 
 #define size_of_array 9
 
-#define PI 3.1415926535897932384626433832795
+
+#define PI 3.1415926535897932384626433832795f
 #define K2 8*(PI/180)
+
+
+#define N_POINTS 16
+#define DAC_N_BITS 10
+#define DAC_N_LEVELS (1U << DAC_N_BITS)
+#define DAC_MID_RANGE (1U << (DAC_N_BITS-1))
+#define PI 3.1415926535897932384626433832795f
+
+
 
 
 //SE DEBE MEJORAR LA MR0 DE AMBOS TEMPORIZADORES LA FUNCION CALIB Y LA FUNCION SPEED SE AÑADIO UNA GANANCIA PARA CONTRARRESTAR LAS GRANDES DIFERENCIAS
@@ -35,6 +51,30 @@ volatile uint32_t speed2=0;		//speed motor2
 volatile uint32_t CAP1_0=0;		//Value of last cap
 volatile uint32_t CAP2_0=0;		//Value of last cap
 
+
+
+static uint16_t sample_table[N_POINTS];		//array of values of a sine signal
+static int sample_idx;										//index pointing to the last output through DAC
+uint16_t point;														//value of the array to be reproduce
+
+
+
+
+void tone_init_samples() {
+		int i;
+		float x;
+	
+		for(i = 0; i < N_POINTS; i++) {
+				x = DAC_MID_RANGE+(DAC_MID_RANGE-1)*sinf((2*PI/N_POINTS)*i);
+				sample_table[i] = ((uint16_t)x) << 6;
+		}
+		
+		sample_idx = 0;
+		
+}
+
+
+
 //__________________________________________IRQ______________________________________________
 void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front of the car, PWM1.2 P1.20 / CAP1.0 P1.18 / Every 2 edges to calibrate
 
@@ -56,6 +96,12 @@ void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front o
 		}
 	}
 	
+	point = (sample_idx == (N_POINTS))? 0 : sample_table[sample_idx];
+	
+	
+	sound(point);
+	
+	sample_idx = (sample_idx == 32)? 0 : sample_idx+1;
 	
 }
 void TIMER2_IRQHandler(){	//Motor (2) Slowest, left side if you see the front of the car, PWM1.4 P1.23 / CAP2.0 P0.4 / When distance is completed
@@ -128,6 +174,13 @@ int main(){
 	Fc_config_TIMER();
 	Fc_config_PWM();
   Fc_bluetooth_communication();
+	dac_cfg();
+	
+	tone_init_samples();
+	
+
+	LPC_DAC->DACR = (512 << 6);
+	
 	
 	while(1){
 		if(enclav==1){
