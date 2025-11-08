@@ -493,6 +493,16 @@
               <FileType>5</FileType>
               <FilePath>.\Inc\sound.h</FilePath>
             </File>
+            <File>
+              <FileName>adc_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\adc_cfg.h</FilePath>
+            </File>
+            <File>
+              <FileName>adc_cfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\adc_cfg.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
