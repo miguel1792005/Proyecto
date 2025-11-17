@@ -12,6 +12,7 @@
 #include "set_distance.h"
 #include "sound.h"
 #include "dac_cfg.h"
+#include "adc_cfg.h"
 
 
 #define size_of_array 15
@@ -21,7 +22,7 @@
 #define K2 8*(PI/180)
 
 
-#define N_POINTS 16
+#define N_POINTS 20
 #define DAC_N_BITS 10
 #define DAC_N_LEVELS (1U << DAC_N_BITS)
 #define DAC_MID_RANGE (1U << (DAC_N_BITS-1))
@@ -51,6 +52,7 @@ volatile uint32_t speed2=0;		//speed motor2
 volatile uint32_t CAP1_0=0;		//Value of last cap
 volatile uint32_t CAP2_0=0;		//Value of last cap
 
+float voltage=0;
 
 uint32_t contador=0;
 
@@ -98,17 +100,7 @@ void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front o
 		}
 	}
 	
-	/*point = (sample_idx >= (4*N_POINTS))? 0x8000 : sample_table[sample_idx];*/
 	
-	contador=contador+1;
-	
-	point=sample_table[sample_idx];
-	
-	sound(point);
-	
-	sample_idx = (contador%1 == 0)? sample_idx+1 : sample_idx;
-	
-	sample_idx = (sample_idx == N_POINTS)? 0: sample_idx;
 	
 }
 void TIMER2_IRQHandler(){	//Motor (2) Slowest, left side if you see the front of the car, PWM1.4 P1.23 / CAP2.0 P0.4 / When distance is completed
@@ -161,7 +153,7 @@ void TIMER3_IRQHandler(){	//Reached the value of distance
 
 	}
 }
-void UART3_IRQHandler(void){
+void UART3_IRQHandler(){
 	uint8_t data_index;
 	if((LPC_UART3->IIR&0xE)==(0x04)){		//At least 1 interruption is pending and recive data available RDA
 		rx_buffer[rx_index++]=LPC_UART3->RBR;		//Save the charapter on rx_buffer
@@ -173,19 +165,75 @@ void UART3_IRQHandler(void){
 		}
 	}
 }
+
+
+
+void ADC_IRQHandler(){
+	
+	
+	voltage = (float)3.3*(((float)((LPC_ADC->ADDR1 >> 4) & 0xFFF))/(float)0xFFF);//Obtain value of voltage
+	
+	LPC_TIM1->MR1 = (LPC_TIM1->MR1)+400000; //Read ADC each 40s*2=80s
+	
+}
+
+
+
+
+void PWM1_IRQHandler(){
+	
+	if(LPC_PWM1->IR&(0x1<<0)){
+		
+		LPC_PWM1->IR=(0x1<<0);
+			
+		contador=contador+1;
+		if(contador>100*N_POINTS){//100=10*10cycles
+			
+			point=sample_table[0];
+			
+		}
+		
+		else{
+		
+			point=sample_table[sample_idx];
+			
+			sound(point);
+			
+			sample_idx = (sample_idx == N_POINTS-1)? 0: sample_idx+1;
+
+		}
+		
+		
+		
+		if(contador>200*N_POINTS){
+			
+			contador=0;
+			
+			
+		}
+		
+	}
+			
+		
+	
+}
+
+
+
+
 //___________________________________________________________________________________________
 
 int main(){
 	Fc_config_pines();
-	Fc_config_IRQ();
 	Fc_config_TIMER();
 	Fc_config_PWM();
   Fc_bluetooth_communication();
 	dac_cfg();
-	/*adc_cfg();*/
+	adc_cfg();
 	
 	tone_init_samples();
 	
+	Fc_config_IRQ();
 
 	
 	
@@ -195,7 +243,8 @@ int main(){
 
 			case 'V':		//Define speed
 				speed=(((uint8_t)(data[pointer_to_data+1]-'0'))*10+(uint8_t)(data[pointer_to_data+2]-'0'));
-				pointer_to_data=pointer_to_data+Fc_speed_control(speed);			
+				pointer_to_data=pointer_to_data+Fc_speed_control(speed);
+
 			break;
 			
 			case 'D':		//Define right movement

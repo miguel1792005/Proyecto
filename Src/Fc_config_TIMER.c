@@ -1,6 +1,20 @@
 #include <LPC17xx.h>
+#define T_ADC 0.1f
 
 void Fc_config_TIMER(void){
+	
+	LPC_SC->PCONP|=(1<<1);		//start Timer0 
+	//TIMER1 for ADC conversions
+	LPC_SC->PCLKSEL0 &= ~(0x3<<2);		//Ftimer1 fclk/4
+	LPC_TIM0->TCR=(0x1<<1);		//Reset Timer0 counter and prescaler and disable
+	LPC_TIM0->PR=249999;		//250000=1TC-> 1TC=0.01s
+	LPC_TIM0->CTCR &= 0x0;		//Increment TC in timer mode
+	LPC_TIM0->MCR|=(0x1<<4);		//Reset TC when MR1
+	
+	LPC_TIM0->MR1=10;
+	LPC_TIM0->EMR|=(2|(0x3<<6));
+	LPC_TIM0->TCR=0x1;//Start timer
+	
 	
 	LPC_SC->PCONP|=(1<<2)|(1<<22)|(1<<23);		//start Timer1 and Timer2
 	//TIMER1 take the freqency of motor1
@@ -9,6 +23,14 @@ void Fc_config_TIMER(void){
 	LPC_TIM1->PR=0x1388;		//5000=1TC
 	LPC_TIM1->CTCR&=~(0xF);		//Increment TC with pck freqency (timer mode) and used CAP1.0 pin input
 	LPC_TIM1->CCR|=(0x5);		//Load the value of TC on CR0 and generate interrupt rising edge
+	
+	
+	LPC_TIM1->MR1=400000; //Read ADC each 40s*2=80s
+
+	LPC_TIM1->EMR|=(0x3<<6);
+	
+	
+	
 	LPC_TIM1->IR=0x3F;
 
 	//TIMER2 take the freqency of motor2
