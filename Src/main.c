@@ -17,6 +17,8 @@
 
 #define size_of_array 15
 
+#define N_OFFSETADC 0.24
+
 
 #define PI 3.1415926535897932384626433832795f
 #define K2 8*(PI/180)
@@ -171,7 +173,7 @@ void UART3_IRQHandler(){
 void ADC_IRQHandler(){
 	
 	
-	voltage = (float)3.3*(((float)((LPC_ADC->ADDR1 >> 4) & 0xFFF))/(float)0xFFF);//Obtain value of voltage
+	voltage = N_OFFSETADC+(float)3.3*(((float)((LPC_ADC->ADDR1 >> 4) & 0xFFF))/(float)0xFFF);//Obtain value of voltage
 	
 	LPC_TIM1->MR1 = (LPC_TIM1->MR1)+400000; //Read ADC each 40s*2=80s
 	
@@ -187,7 +189,7 @@ void PWM1_IRQHandler(){
 		LPC_PWM1->IR=(0x1<<0);
 			
 		contador=contador+1;
-		if(contador>100*N_POINTS){//100=10*10cycles
+		if(contador>500*N_POINTS){//5000=500*10cycles
 			
 			point=sample_table[0];
 			
@@ -205,7 +207,7 @@ void PWM1_IRQHandler(){
 		
 		
 		
-		if(contador>200*N_POINTS){
+		if(contador>1000*N_POINTS){
 			
 			contador=0;
 			
