@@ -13,6 +13,7 @@
 #include "sound.h"
 #include "dac_cfg.h"
 #include "adc_cfg.h"
+#include "eint0_cfg.h"
 
 
 #define size_of_array 15
@@ -40,7 +41,7 @@ volatile char rx_buffer[size_of_array]={0};		// Reception Buffer
 volatile char data[size_of_array]={0};		// Real comunication
 volatile uint8_t rx_index=0;
 volatile uint8_t pointer_to_data=0; // Pointer to the array of data
-volatile uint8_t enclav=1;
+volatile uint8_t token=0; // Start the movement after pressing the KEY1
 
 volatile uint8_t speed;
 volatile uint16_t distance;
@@ -79,6 +80,13 @@ void tone_init_samples() {
 		
 }
 
+
+//__________________________________________EINT0|BUTTON|KEY1______________________________________________
+void EINT0_IRQHandler(){
+	
+	token=1;
+		
+}
 
 
 //__________________________________________IRQ______________________________________________
@@ -151,7 +159,14 @@ void TIMER3_IRQHandler(){	//Reached the value of distance
 		
 		LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16))); // Security Stop
 		pointer_to_data+=3;
-		enclav=1;
+		token=1;
+		
+		if(pointer_to_data>=size_of_array){
+			
+			LPC_SC->EXTINT=1; // Wait for another push button to start a new cycle
+			token=0;
+			
+		}
 
 	}
 }
@@ -232,15 +247,16 @@ int main(){
   Fc_bluetooth_communication();
 	dac_cfg();
 	adc_cfg();
+	eint0_cfg();
 	
 	tone_init_samples();
 	
-	Fc_config_IRQ();
-
-	
 	
 	while(1){
-		if(enclav==1){
+		if(token==1){
+			
+			Fc_config_IRQ();
+			
 			switch(data[pointer_to_data]){
 
 			case 'V':		//Define speed
@@ -257,7 +273,7 @@ int main(){
 				NVIC_EnableIRQ(TIMER1_IRQn);
 				NVIC_EnableIRQ(TIMER2_IRQn);
 				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x1<<16);
-				enclav=0;
+				token=0;
 
 			break;
 			
@@ -269,7 +285,7 @@ int main(){
 				NVIC_EnableIRQ(TIMER1_IRQn);
 				NVIC_EnableIRQ(TIMER2_IRQn);
 				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x2<<16);
-				enclav=0;
+				token=0;
 
 			break;
 			
@@ -281,7 +297,7 @@ int main(){
 				NVIC_EnableIRQ(TIMER1_IRQn);
 				NVIC_EnableIRQ(TIMER2_IRQn);
 				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x1<<16);
-				enclav=0;
+				token=0;
 
 			break;
 			
@@ -293,7 +309,7 @@ int main(){
 				NVIC_EnableIRQ(TIMER1_IRQn);
 				NVIC_EnableIRQ(TIMER2_IRQn);
 				LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x2<<16);
-				enclav=0;
+				token=0;
 
 			break;
 			
