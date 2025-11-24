@@ -513,6 +513,16 @@
               <FileType>5</FileType>
               <FilePath>.\Inc\eint0_cfg.h</FilePath>
             </File>
+            <File>
+              <FileName>usb_cfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\usb_cfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\usb_cfg.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

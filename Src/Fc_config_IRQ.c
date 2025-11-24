@@ -14,6 +14,8 @@ void Fc_config_IRQ(void){
 	NVIC_EnableIRQ(TIMER2_IRQn);
 	NVIC_EnableIRQ(TIMER3_IRQn);
 	NVIC_EnableIRQ(PWM1_IRQn);
+	NVIC_EnableIRQ(UART0_IRQn);
+	NVIC_EnableIRQ(UART3_IRQn);
 	
 	
 	LPC_PWM1->TCR=(0x9<<0); //PWM counter and prescaler enable to counting

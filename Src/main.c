@@ -14,6 +14,7 @@
 #include "dac_cfg.h"
 #include "adc_cfg.h"
 #include "eint0_cfg.h"
+#include "usb_cfg.h"
 
 
 #define size_of_array 15
@@ -84,6 +85,7 @@ void tone_init_samples() {
 //__________________________________________EINT0|BUTTON|KEY1______________________________________________
 void EINT0_IRQHandler(){
 	
+	LPC_SC->EXTINT=1; // Clear flag of IRQ
 	token=1;
 		
 }
@@ -163,13 +165,28 @@ void TIMER3_IRQHandler(){	//Reached the value of distance
 		
 		if(pointer_to_data>=size_of_array){
 			
-			LPC_SC->EXTINT=1; // Wait for another push button to start a new cycle
 			token=0;
 			
 		}
 
 	}
 }
+
+void UART0_IRQHandler(){
+	uint8_t data_index;
+	if((LPC_UART0->IIR&0xE)==(0x04)){		//At least 1 interruption is pending and recive data available RDA
+		rx_buffer[rx_index++]=LPC_UART0->RBR;		//Save the charapter on rx_buffer
+		if(rx_index>=size_of_array){
+			rx_index=0;
+			for(data_index=0;data_index<size_of_array;data_index++){
+				data[data_index]=rx_buffer[data_index];		// Save in array of data
+			}
+		}
+	}
+	
+}
+
+
 void UART3_IRQHandler(){
 	uint8_t data_index;
 	if((LPC_UART3->IIR&0xE)==(0x04)){		//At least 1 interruption is pending and recive data available RDA
@@ -248,6 +265,7 @@ int main(){
 	dac_cfg();
 	adc_cfg();
 	eint0_cfg();
+	usb_cfg();
 	
 	tone_init_samples();
 	
