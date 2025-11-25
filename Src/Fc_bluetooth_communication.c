@@ -11,6 +11,4 @@ void Fc_bluetooth_communication(void){
 	LPC_UART3->FCR=(LPC_UART3->FCR&~(0xFF))|(0x3);		// Enable FIFO and reset FIFO RX, RX trigger level 0 Interrupt for Interrupt for each char sent
 	
 	LPC_UART3->IER|=(0x1);		//Enable interruption
-	
-	
 }

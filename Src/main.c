@@ -16,11 +16,12 @@
 #include "eint0_cfg.h"
 #include "usb_cfg.h"
 
+#define FCPU 25000000
 
-#define size_of_array 15
+#define size_of_array 9
 
-#define N_OFFSETADC 0.24
-
+#define N_OFFSETADC	0.24f
+#define GAIN_ADC 2.33f
 
 #define PI 3.1415926535897932384626433832795f
 #define K2 8*(PI/180)
@@ -32,7 +33,14 @@
 #define DAC_MID_RANGE (1U << (DAC_N_BITS-1))
 #define PI 3.1415926535897932384626433832795f
 
-
+#define DO	261
+#define RE	293
+#define MI	329
+#define FA	349
+#define SOL	392
+#define LA	440
+#define SI	493
+#define notes		24
 
 
 //SE DEBE MEJORAR LA MR0 DE AMBOS TEMPORIZADORES LA FUNCION CALIB Y LA FUNCION SPEED SE AÑADIO UNA GANANCIA PARA CONTRARRESTAR LAS GRANDES DIFERENCIAS
@@ -60,38 +68,45 @@ float voltage=0;
 
 uint32_t contador=0;
 
+uint16_t Song[notes]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,FA,FA,FA,FA,FA,FA,FA,FA};	 //ESPAÑA
+uint8_t index_song=0;
 
 static uint16_t sample_table[N_POINTS];		//array of values of a sine signal
 static int sample_idx;										//index pointing to the last output through DAC
-uint16_t point;														//value of the array to be reproduce
-
-
 
 
 void tone_init_samples() {
 		int i;
 		float x;
 	
-		for(i = 0; i < N_POINTS; i++) {
-				x = DAC_MID_RANGE+(DAC_MID_RANGE-1)*sinf((2*PI/(N_POINTS))*i);
-				sample_table[i] = ((uint16_t)x) << 6;
+		for(i=0;i<N_POINTS;i++) {
+				x=DAC_MID_RANGE+(DAC_MID_RANGE-1)*sinf((2*PI/(N_POINTS))*i);
+				sample_table[i]=((uint16_t)x)<<6;
 		}
-		
 		sample_idx = 0;
-		
 }
-
 
 //__________________________________________EINT0|BUTTON|KEY1______________________________________________
-void EINT0_IRQHandler(){
-	
-	LPC_SC->EXTINT=1; // Clear flag of IRQ
+void EINT1_IRQHandler(){
+	LPC_SC->EXTINT=0x2; // Clear flag of IRQ
+	Fc_config_IRQ();
 	token=1;
-		
 }
 
-
 //__________________________________________IRQ______________________________________________
+void TIMER0_IRQHandler(){	//Generate the sound signal with DAC
+	if(LPC_TIM0->IR&((0x1))){		//Interrupt MR0 Show the DAC value
+		LPC_TIM0->IR=(0x1);		//Clear flag of MR0 interrupt
+		sound(sample_table[sample_idx]);
+		sample_idx=(sample_idx==N_POINTS-1)?0:sample_idx+1;
+		LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Song[index_song]))-1);
+	}
+	if(LPC_TIM0->IR&((0x1<<2))){		//Interrupt MR2 change the letter
+		LPC_TIM0->IR=(0x1<<2);		//Clear flag of MR2 interrupt
+		LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Song[index_song]))-1);		//Start with DO	20 samples
+		index_song=(index_song==(notes-1))?0:index_song+1;		
+	}
+}
 void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front of the car, PWM1.2 P1.20 / CAP1.0 P1.18 / Every 2 edges to calibrate
 
 	if(LPC_TIM1->IR&((0x1<<4))){		//Interrupt CAP0 (Calib speed)
@@ -111,9 +126,6 @@ void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front o
 			calib(gain1,gain2,speed);
 		}
 	}
-	
-	
-	
 }
 void TIMER2_IRQHandler(){	//Motor (2) Slowest, left side if you see the front of the car, PWM1.4 P1.23 / CAP2.0 P0.4 / When distance is completed
 	
@@ -172,7 +184,7 @@ void TIMER3_IRQHandler(){	//Reached the value of distance
 	}
 }
 
-void UART0_IRQHandler(){
+/*void UART0_IRQHandler(){
 	uint8_t data_index;
 	if((LPC_UART0->IIR&0xE)==(0x04)){		//At least 1 interruption is pending and recive data available RDA
 		rx_buffer[rx_index++]=LPC_UART0->RBR;		//Save the charapter on rx_buffer
@@ -184,8 +196,7 @@ void UART0_IRQHandler(){
 		}
 	}
 	
-}
-
+}*/
 
 void UART3_IRQHandler(){
 	uint8_t data_index;
@@ -200,63 +211,11 @@ void UART3_IRQHandler(){
 	}
 }
 
-
-
 void ADC_IRQHandler(){
-	
-	
-	voltage = N_OFFSETADC+(float)3.3*(((float)((LPC_ADC->ADDR1 >> 4) & 0xFFF))/(float)0xFFF);//Obtain value of voltage
-	
-	LPC_TIM1->MR1 = (LPC_TIM1->MR1)+400000; //Read ADC each 40s*2=80s
-	
+	voltage=(float)(GAIN_ADC*(N_OFFSETADC+(float)3.3*(((float)((LPC_ADC->ADDR1>>4)&0xFFF))/(float)0xFFF)));		//Obtain value of voltage
+	LPC_TIM1->MR1=(LPC_TIM1->MR1)+400000;		//Read ADC each 40s*2=80s
 }
-
-
-
-
-void PWM1_IRQHandler(){
-	
-	if(LPC_PWM1->IR&(0x1<<0)){
-		
-		LPC_PWM1->IR=(0x1<<0);
-			
-		contador=contador+1;
-		if(contador>500*N_POINTS){//5000=500*10cycles
-			
-			point=sample_table[0];
-			
-		}
-		
-		else{
-		
-			point=sample_table[sample_idx];
-			
-			sound(point);
-			
-			sample_idx = (sample_idx == N_POINTS-1)? 0: sample_idx+1;
-
-		}
-		
-		
-		
-		if(contador>1000*N_POINTS){
-			
-			contador=0;
-			
-			
-		}
-		
-	}
-			
-		
-	
-}
-
-
-
-
 //___________________________________________________________________________________________
-
 int main(){
 	Fc_config_pines();
 	Fc_config_TIMER();
@@ -267,13 +226,13 @@ int main(){
 	eint0_cfg();
 	usb_cfg();
 	
-	tone_init_samples();
+	NVIC_EnableIRQ(UART0_IRQn);
+	NVIC_EnableIRQ(UART3_IRQn);
 	
+	tone_init_samples();
 	
 	while(1){
 		if(token==1){
-			
-			Fc_config_IRQ();
 			
 			switch(data[pointer_to_data]){
 

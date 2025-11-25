@@ -14,10 +14,6 @@ void Fc_config_PWM(void){
 	LPC_PWM1->MR4=0;
 	LPC_PWM1->LER|=(0x1<<4);		//Enable to change the value of MR4
 	
-	LPC_PWM1->MCR|=(0x1<<0);	//IRQ when match MR1
-	
-	
-	
 	LPC_PWM1->PCR|=((1<<10)|(1<<12)); //Enable source
 	
 }
