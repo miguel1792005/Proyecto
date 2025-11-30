@@ -40,7 +40,7 @@
 #define SOL	392
 #define LA	440
 #define SI	493
-#define notes		24
+#define notes		28
 
 
 //SE DEBE MEJORAR LA MR0 DE AMBOS TEMPORIZADORES LA FUNCION CALIB Y LA FUNCION SPEED SE AÑADIO UNA GANANCIA PARA CONTRARRESTAR LAS GRANDES DIFERENCIAS
@@ -68,7 +68,7 @@ float voltage=0;
 
 uint32_t contador=0;
 
-uint16_t Song[notes]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,FA,FA,FA,FA,FA,FA,FA,FA};	 //ESPAÑA
+uint16_t Song[notes]={FA,FA,FA,SI,SI,SI,RE,RE,FA,FA,FA,FA,SI,SI,SI,RE,RE,SI,SI,LA,LA,SOL,SOL,FA,FA,FA,FA,FA};	 //CUCARACHA SONG
 uint8_t index_song=0;
 
 static uint16_t sample_table[N_POINTS];		//array of values of a sine signal
@@ -215,6 +215,8 @@ void ADC_IRQHandler(){
 	voltage=(float)(GAIN_ADC*(N_OFFSETADC+(float)3.3*(((float)((LPC_ADC->ADDR1>>4)&0xFFF))/(float)0xFFF)));		//Obtain value of voltage
 	LPC_TIM1->MR1=(LPC_TIM1->MR1)+400000;		//Read ADC each 40s*2=80s
 }
+
+
 //___________________________________________________________________________________________
 int main(){
 	Fc_config_pines();
