@@ -1,6 +1,4 @@
 #include "LPC17xx.h"
-
-
 #define	F_CCLK	(SystemCoreClock)
 #define F_PCLK	(SystemCoreClock/4)
 #define FREQ

@@ -8,7 +8,7 @@ void Fc_bluetooth_communication(void){
 	LPC_UART3->DLM=2;		//Expresion used to take the baud rate in page n323 with reset value of DIVadd=0/Mulvaal=1
 	LPC_UART3->DLL=139;
 	LPC_UART3->LCR&=~(0x1<<7);		// Disable divisor lach
-	LPC_UART3->FCR=(LPC_UART3->FCR&~(0xFF))|(0x3);		// Enable FIFO and reset FIFO RX, RX trigger level 0 Interrupt for Interrupt for each char sent
+	LPC_UART3->FCR=(LPC_UART3->FCR&~(0xFF))|(0x7);		// Enable FIFO and reset FIFO RX/TX, RX trigger level 0 Interrupt for each char 
 	
 	LPC_UART3->IER|=(0x1);		//Enable interruption
 }
