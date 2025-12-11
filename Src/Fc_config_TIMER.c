@@ -10,7 +10,7 @@ void Fc_config_TIMER(void){
 	LPC_TIM0->PR=0;
 	LPC_TIM0->CTCR&=0x0;		//Increment TC in timer mode
 	LPC_TIM0->MCR|=(0x3<<6)|(0x1);		//Reset TC when MR2 and interrupt on MR2 and MR0
-	LPC_TIM0->MR2=12499999;		//0.5 secs with letter
+	LPC_TIM0->MR2=12499999;		//0.5 secs with each letter
 	LPC_TIM0->MR1=12499999;	//Conversion ADC 1 sec(toggle 0.5-0.5)
 	LPC_TIM0->MR0=4788;		//Start with DO	20 samples
 	LPC_TIM0->EMR|=(0x2|(0x3<<6));
