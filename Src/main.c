@@ -140,7 +140,7 @@ void EINT1_IRQHandler(){
 //__________________________________________EINT2|BUTTON|KEY2______________________________________________
 void EINT2_IRQHandler(){
 	
-	LPC_SC->EXTINT=0x3; //Clear flag of IRQ
+	LPC_SC->EXTINT=0x4; //Clear flag of IRQ
 	
 	sel_song++;
 	
