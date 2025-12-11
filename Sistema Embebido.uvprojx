@@ -504,16 +504,6 @@
               <FilePath>.\Src\adc_cfg.c</FilePath>
             </File>
             <File>
-              <FileName>eint0_cfg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Src\eint0_cfg.c</FilePath>
-            </File>
-            <File>
-              <FileName>eint0_cfg.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Inc\eint0_cfg.h</FilePath>
-            </File>
-            <File>
               <FileName>usb_cfg.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Src\usb_cfg.c</FilePath>
@@ -542,6 +532,26 @@
               <FileName>GLCD.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Inc\GLCD.h</FilePath>
+            </File>
+            <File>
+              <FileName>eint2_cfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\eint2_cfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>eint1_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\eint1_cfg.h</FilePath>
+            </File>
+            <File>
+              <FileName>eint1_cfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\eint1_cfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>eint2_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\eint2_cfg.h</FilePath>
             </File>
           </Files>
         </Group>

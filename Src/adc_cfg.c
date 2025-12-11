@@ -4,7 +4,7 @@
 #define FREQ
 
 void adc_cfg(void) {
-	uint32_t div;
+	//uint32_t div;   REVISAR Y BORRAR SI NO ES NECESARIO
 	LPC_SC->PCLKSEL0&=~(0x3<<24); // Clear bits 25:24 ...
 	LPC_SC->PCLKSEL0|=0x00;	// PCLK_ADC = CCLK/4
 	LPC_SC->PCONP|=0x1<<12;	// ADC 0 power on

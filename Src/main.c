@@ -39,8 +39,10 @@ static char lcd_buffer[256];
 #include "sound.h"
 #include "dac_cfg.h"
 #include "adc_cfg.h"
-#include "eint0_cfg.h"
+#include "eint1_cfg.h"
+#include "eint2_cfg.h"
 #include "usb_cfg.h"
+
 
 #define FCPU 25000000
 
@@ -68,7 +70,8 @@ static char lcd_buffer[256];
 #define SOL	392
 #define LA	440
 #define SI	493
-#define notes		24
+#define notese	24
+#define notesr	53
 
 
 //SE DEBE MEJORAR LA MR0 DE AMBOS TEMPORIZADORES LA FUNCION CALIB Y LA FUNCION SPEED SE AÑADIO UNA GANANCIA PARA CONTRARRESTAR LAS GRANDES DIFERENCIAS
@@ -101,7 +104,10 @@ float voltage=0;
 uint32_t contador=0;
 uint8_t end_move=0;
 
-uint16_t Song[notes]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,FA,FA,FA,FA,FA,FA,FA,FA};	 //ESPAÑA
+uint8_t sel_song=0;
+uint16_t Espana[notese]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,FA,FA,FA,FA,FA,FA,FA,FA};	 //ESPAÑA
+uint16_t Cucaracha[notese]={DO,FA,DO,FA,FA,FA,LA,LA,DO,FA,DO,FA,FA,FA,LA,LA,FA,SOL,MI,FA,RE,MI,DO,DO}; //CUCARACHA
+uint16_t Rocky[notesr]={MI,SOL,SOL,LA,LA,LA,LA,LA,LA*2,SI*2,SI*2,MI,MI,MI,MI,MI,MI,SOL,SOL,LA,LA,LA,LA,LA,LA*2,SI*2,SI*2,MI,MI,MI,MI,MI,RE,DO,RE,RE,DO,RE,MI,MI,DO,DO*2,SI,SI*2,LA,SI,SOL,SOL,SOL,DO,SI,SI,SI}; //ROCKY
 uint8_t index_song=0;
 
 static uint16_t sample_table[N_POINTS];		//array of values of a sine signal
@@ -129,20 +135,68 @@ void EINT1_IRQHandler(){
 	//}
 }
 
+
+//__________________________________________EINT2|BUTTON|KEY2______________________________________________
+void EINT2_IRQHandler(){
+	
+	LPC_SC->EXTINT=0x3; //Clear flag of IRQ
+	
+	sel_song++;
+	
+	if(sel_song>=3){
+		
+		sel_song=0;
+	
+	}
+		
+	
+}
+
 //__________________________________________IRQ______________________________________________
 void TIMER0_IRQHandler(){	//Generate the sound signal with DAC
 	if(LPC_TIM0->IR&((0x1))){		//Interrupt MR0 Show the DAC value
 		LPC_TIM0->IR=(0x1);		//Clear flag of MR0 interrupt
 		sound(sample_table[sample_idx]);
 		sample_idx=(sample_idx==N_POINTS-1)?0:sample_idx+1;
-		LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Song[index_song]))-1);
+		
+		switch(sel_song){
+			case 0:
+				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Espana[index_song]))-1);
+				break;
+			case 1:
+				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Cucaracha[index_song]))-1);
+				break;
+			case 2:
+				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Rocky[index_song]))-1);
+				break;
+
+		}
+		
 	}
+	
 	if(LPC_TIM0->IR&((0x1<<2))){		//Interrupt MR2 change the letter
 		LPC_TIM0->IR=(0x1<<2);		//Clear flag of MR2 interrupt
-		LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Song[index_song]))-1);		//Start with DO	20 samples
-		index_song=(index_song==(notes-1))?0:index_song+1;
+		
+		switch(sel_song){
+			case 0:
+				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Espana[index_song]))-1);		//Start with DO	20 samples
+				index_song=(index_song==(notese-1))?0:index_song+1;
+			break;
+			
+			case 1:
+				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Cucaracha[index_song]))-1);		//Start with DO	20 samples
+				index_song=(index_song==(notese-1))?0:index_song+1;
+			break;
+			
+			case 2:
+				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Rocky[index_song]))-1);		//Start with DO	20 samples
+				index_song=(index_song==(notesr-1))?0:index_song+1;
+			break;
+		}
+	
 	}
-}
+}	
+	
 void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front of the car, PWM1.2 P1.20 / CAP1.0 P1.18 / Every 2 edges to calibrate
 
 	if(LPC_TIM1->IR&((0x1<<4))){		//Interrupt CAP0 (Calib speed)
@@ -357,7 +411,8 @@ int main(){
   Fc_bluetooth_communication();
 	dac_cfg();
 	adc_cfg();
-	eint0_cfg();
+	eint1_cfg();
+	eint2_cfg();
 	usb_cfg();
 	
 	
