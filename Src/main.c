@@ -108,7 +108,7 @@ uint8_t sel_song=0;
 uint16_t Espana[notese]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,FA,FA,FA,FA,FA,FA,FA,FA};	 //ESPAÑA
 uint16_t Cucaracha[notese]={DO,FA,DO,FA,FA,FA,LA,LA,DO,FA,DO,FA,FA,FA,LA,LA,FA,SOL,MI,FA,RE,MI,DO,DO}; //CUCARACHA
 uint16_t Rocky[notesr]={MI,SOL,SOL,LA,LA,LA,LA,LA,LA*2,SI*2,SI*2,MI,MI,MI,MI,MI,MI,SOL,SOL,LA,LA,LA,LA,LA,LA*2,SI*2,SI*2,MI,MI,MI,MI,MI,RE,DO,RE,RE,DO,RE,MI,MI,DO,DO*2,SI,SI*2,LA,SI,SOL,SOL,SOL,DO,SI,SI,SI}; //ROCKY
-uint16_t Beep=DO*2; //Beep while backwards moving is performed
+uint16_t Beep[2]={DO*2,0}; //Beep while backwards moving is performed
 uint8_t index_song=0;
 
 static uint16_t sample_table[N_POINTS];		//array of values of a sine signal
@@ -173,7 +173,7 @@ void TIMER0_IRQHandler(){	//Generate the sound signal with DAC
 				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Rocky[index_song]))-1);
 				break;
 			case 3:
-				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Beep))-1);
+				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Beep[index_song]))-1);
 				break;
 			
 
@@ -201,7 +201,8 @@ void TIMER0_IRQHandler(){	//Generate the sound signal with DAC
 			break;
 			
 			case 3:
-				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Beep))-1);		//Start with DO	20 samples
+				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Beep[index_song]))-1);		//Start with DO	20 samples
+				index_song=(index_song==(2-1))?0:index_song+1;
 			break;
 		}
 	
