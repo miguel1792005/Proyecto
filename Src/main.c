@@ -63,56 +63,57 @@ static char lcd_buffer[256];
 #define DAC_MID_RANGE (1U << (DAC_N_BITS-1))
 #define PI 3.1415926535897932384626433832795f
 
-#define DO	261
-#define RE	293
-#define MI	329
-#define FA	349
-#define SOL	392
+#define DO	260
+#define RE	290
+#define MI	330
+#define FA	350
+#define SOL	390
 #define LA	440
-#define SI	493
+#define SI	490
 #define notese	24
-#define notesr	53
+#define notesr	30
+#define notesn	20
+#define notesb	12
 
 
-//SE DEBE MEJORAR LA MR0 DE AMBOS TEMPORIZADORES LA FUNCION CALIB Y LA FUNCION SPEED SE AÑADIO UNA GANANCIA PARA CONTRARRESTAR LAS GRANDES DIFERENCIAS
-//ENTRE AMBOS MOTORES ACTUALES
 
-//volatile char rx_buffer[size_of_array]={0};		// Reception Buffer 
-//volatile char data[]={0};		// Real comunication
-//volatile uint8_t rx_index=0;
-//volatile uint8_t pointer_to_data=0; // Pointer to the array of data
-volatile uint8_t *rx_buffer=NULL;
-volatile uint16_t current_size=0;
-volatile uint16_t pointer_to_data=0;
-uint8_t message=0; //message reached
+volatile uint8_t *rx_buffer=NULL;	//	DYNAMIC BUFFER FOR SAVING THE MESSAGE
+volatile uint16_t current_size=0;	//	VAR. TO SAVE THE SIZE OF THE DYNAMIC BUFFER
+volatile uint16_t pointer_to_data=0;	//	POINTER FOR READING THE RECEIVED MESSAGE
+uint8_t message=0; //	FLAG ACTIVE WHEN THE MESSAGE HAS BEEN RECEIVED
 
-volatile uint8_t token=0; // Start the movement after pressing the KEY1
+volatile uint8_t token=0; // FLAG TO START THE MOVEMENT AFTER PRESSING KEY1
+volatile uint8_t tokencalib_1=0; //	FLAG THAT ACTIVATES THE CALIBRATION OF WHEEL 1
+volatile uint8_t tokencalib_2=0; //	FLAG THAT ACTIVATES THE CALIBRATION OF WHEEL 2
 
-volatile uint8_t speed;
-volatile uint16_t distance;
+volatile uint8_t speed;	//	VAR. THAT STORES THE PORCENTUAL SPEED RECEIVED (CHAR->UINT8_T)
+volatile uint8_t distance;	// VAR. THAT STORES THE DISTANCE RECEIVED (CHAR->UINT8_T)
 
-volatile float gain1=1;
-volatile float gain2=1;
+volatile float gain1=1;	//	GAIN TO CALIBRATE SPEED OF WHEEL 1
+volatile float gain2=1;	//	GAIN TO CALIBRATE SPEED OF WHEEL 2
 
-volatile uint32_t speed1=0;		//speed motor1
-volatile uint32_t speed2=0;		//speed motor2
-volatile uint32_t CAP1_0=0;		//Value of last cap
-volatile uint32_t CAP2_0=0;		//Value of last cap
+volatile uint32_t speed1=0;	//	TIME BETWEEN EDGES OF ENCODER OF MOTOR 1 (SPEED WHEEL 1)
+volatile uint32_t speed2=0;	//	TIME BETWEEN EDGES OF ENCODER OF MOTOR 2 (SPEED WHEEL 2)
+volatile uint32_t CAP1_0=0;	//	VAR. TO STORE THE VALUE OF TC OF LAST CAPTURE (MOTOR 1)
+volatile uint32_t CAP2_0=0;	//	VAR. TO STORE THE VALUE OF TC OF LAST CAPTURE (MOTOR 2)
 
-float voltage=0;
+float voltage=0;	//	VOLTAGE OF BATTERY MEASURE FROM ADC
 
-uint32_t contador=0;
-uint8_t end_move=0;
+uint8_t end_move=0;	// FLAG TO DETECT THE STATE OF THE ROBOT
 
-uint8_t sel_song=0;
+uint8_t sel_song=0;	//	VAR. TO SELECT A SONG
 uint16_t Espana[notese]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,FA,FA,FA,FA,FA,FA,FA,FA};	 //ESPAÑA
-uint16_t Cucaracha[notese]={DO,FA,DO,FA,FA,FA,LA,LA,DO,FA,DO,FA,FA,FA,LA,LA,FA,SOL,MI,FA,RE,MI,DO,DO}; //CUCARACHA
-uint16_t Rocky[notesr]={MI,SOL,SOL,LA,LA,LA,LA,LA,LA*2,SI*2,SI*2,MI,MI,MI,MI,MI,MI,SOL,SOL,LA,LA,LA,LA,LA,LA*2,SI*2,SI*2,MI,MI,MI,MI,MI,RE,DO,RE,RE,DO,RE,MI,MI,DO,DO*2,SI,SI*2,LA,SI,SOL,SOL,SOL,DO,SI,SI,SI}; //ROCKY
-uint16_t Beep[2]={DO*2,0}; //Beep while backwards moving is performed
-uint8_t index_song=0;
+uint16_t navidad[notesn]={SOL,DO*2,DO*2,SI,DO*2,LA,LA,LA,LA,0,LA,RE*2,RE*2,DO*2,LA,SOL,SOL,SOL,SOL,0};	//	FELIZ NAVIDAD
+uint16_t blanca[notesr]={LA,LA,LA,LA,LA+20,LA,SOL+20,LA,LA+20,LA+20,LA+20,LA+20,SI,DO*2,DO*2,DO*2,DO*2,RE,MI,FA,SOL,FA,MI,RE,DO,DO,DO,DO,DO,DO};	//	OH BLANCA NAVIDAD
+uint16_t Beep[notesb]={600,500,600,500,600,500,600,500,600,500,600,500}; //Beep while backwards moving is performed
+uint16_t Silence=0;	//	Silence
+uint8_t index_song=0;	//	POINTER TO CHORD OF THE SONG
 
-static uint16_t sample_table[N_POINTS];		//array of values of a sine signal
-static int sample_idx;										//index pointing to the last output through DAC
+
+uint8_t p;
+
+static uint16_t sample_table[N_POINTS];	//	ARRAY OF VALUES OF A SINE
+static int sample_idx;	//	POINTER TO THE ARRAY OF SINES
 
 void tone_init_samples() {
 		int i;
@@ -127,27 +128,30 @@ void tone_init_samples() {
 
 //__________________________________________EINT1|BUTTON|KEY1______________________________________________
 void EINT1_IRQHandler(){
-	LPC_SC->EXTINT=0x2; // Clear flag of IRQ
-	Fc_config_IRQ();
+	LPC_SC->EXTINT=0x2;	//	CLEAR FLAG OF IRQ
+	Fc_config_IRQ();	//	CONFIGURATION OF THE REST OF IRQ
 	
-	//if(rx_buffer != NULL && current_size > 0){
+	
 		token=1;
-		end_move=1;
-	//}
+	
 }
 
 
 //__________________________________________EINT2|BUTTON|KEY2______________________________________________
 void EINT2_IRQHandler(){
 	
-	LPC_SC->EXTINT=0x4; //Clear flag of IRQ
+	LPC_SC->EXTINT=0x4;	//	CLEAR FLAG OF IRQ
 	
-	sel_song++;
+	sel_song++;	//	SELECT THE NEXT SONG
 	
+	index_song=0;	// POINT TO THE START OF THE SONG
+	sample_idx=0;	//	POINT TO THE FIRST VALUE OF THE SINE
 	
-	if(sel_song>=3 && rx_buffer[pointer_to_data]!='R'){
+	LCD_Clear(Cyan);
+	
+	if(sel_song>=2 && rx_buffer[pointer_to_data]!='R'){
 		
-		sel_song=0;
+		sel_song=0;	//	CIRCULAR SELECTION OF SONG
 	
 	}
 		
@@ -155,28 +159,43 @@ void EINT2_IRQHandler(){
 }
 
 //__________________________________________IRQ______________________________________________
-void TIMER0_IRQHandler(){	//Generate the sound signal with DAC
-	if(LPC_TIM0->IR&((0x1))){		//Interrupt MR0 Show the DAC value
-		LPC_TIM0->IR=(0x1);		//Clear flag of MR0 interrupt
-		sound(sample_table[sample_idx]);
-		sample_idx=(sample_idx==N_POINTS-1)?0:sample_idx+1;
+void TIMER0_IRQHandler(){	//	GENERATE THE SOUND SIGNAL WITH DAC
+	if(LPC_TIM0->IR&((0x1))){	//	MATCH MR0 -> SHOW DAC VALUE
+		LPC_TIM0->IR=(0x1);	//	CLEAR FLAG OF MR0 MATCH
+		sound(sample_table[sample_idx]);	//	OUTPUT VALUES OF SINE
+		sample_idx=(sample_idx==N_POINTS-1)?0:sample_idx+1;	//	CIRCULAR ARRAY -> CONTINUOUS SINE
 		
-		
-		switch(sel_song){
-			case 0:
-				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Espana[index_song]))-1);
-				break;
-			case 1:
-				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Cucaracha[index_song]))-1);
-				break;
-			case 2:
-				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Rocky[index_song]))-1);
-				break;
-			case 3:
-				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Beep[index_song]))-1);
-				break;
-			
+		if(rx_buffer[pointer_to_data]!='R' && end_move!=0){
+			switch(sel_song){
+				case 0:
+					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*navidad[index_song]))-1);
+					break;
+				case 1:
+					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Espana[index_song]))-1);
+					break;
+				case 2:
+					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*blanca[index_song]))-1);
+					break;
+				default:
+					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Silence))-1);
 
+				break;
+				
+
+		}
+	}
+		
+		if(end_move==0){
+					
+			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Silence))-1);
+		}
+			
+	
+	
+		
+		if(rx_buffer[pointer_to_data]=='R'){
+					
+			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Beep[index_song]))-1);
 		}
 		
 	}
@@ -184,28 +203,45 @@ void TIMER0_IRQHandler(){	//Generate the sound signal with DAC
 	if(LPC_TIM0->IR&((0x1<<2))){		//Interrupt MR2 change the letter
 		LPC_TIM0->IR=(0x1<<2);		//Clear flag of MR2 interrupt
 		
+		
+		if(rx_buffer[pointer_to_data]!='R' && end_move!=0){
 		switch(sel_song){
 			case 0:
-				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Espana[index_song]))-1);		//Start with DO	20 samples
-				index_song=(index_song==(notese-1))?0:index_song+1;
+				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*navidad[index_song]))-1);		//Start with DO	20 samples
+				index_song=(index_song>=(notesn-1))?0:index_song+1;
 			break;
 			
-			case 1:
-				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Cucaracha[index_song]))-1);		//Start with DO	20 samples
-				index_song=(index_song==(notese-1))?0:index_song+1;
+			case 1:			
+				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Espana[index_song]))-1);		//Start with DO	20 samples
+				index_song=(index_song>=(notese-1))?0:index_song+1;
 			break;
 			
 			case 2:
-				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Rocky[index_song]))-1);		//Start with DO	20 samples
-				index_song=(index_song==(notesr-1))?0:index_song+1;
+				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*blanca[index_song]))-1);		//Start with DO	20 samples
+				index_song=(index_song>=(notesr-1))?0:index_song+1;
 			break;
 			
-			case 3:
-				LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Beep[index_song]))-1);		//Start with DO	20 samples
-				index_song=(index_song==(2-1))?0:index_song+1;
+			default:
+				LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Silence))-1);
+
 			break;
+			
+			}
+		
 		}
-	
+		
+		if(end_move==0){
+					
+			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Silence))-1);
+		}
+		
+		
+		if(rx_buffer[pointer_to_data]=='R'){
+					
+			LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Beep[index_song]))-1);		//Start with DO	20 samples
+			index_song=(index_song>=(notesb-1))?0:index_song+1;
+			
+		}
 	}
 }	
 	
@@ -217,6 +253,8 @@ void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front o
 		speed1=LPC_TIM1->CR0-CAP1_0;
 		CAP1_0=LPC_TIM1->CR0;
 		
+		tokencalib_1=1;
+		/*
 		if((speed1)<(speed2)){
 			gain1=gain1*0.9999;
 			gain2=gain2*1.0001;
@@ -238,7 +276,8 @@ void TIMER1_IRQHandler(){	//Motor (1) Fastest, right side if you see the front o
   Xpos = 0; Ypos = line*FONT_H;
   sprintf(lcd_buffer, "Velocity MOTOR 2: %4d", speed2);
   GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, White, Blue);	
-		
+	*/	
+	
 	}
 }
 void TIMER2_IRQHandler(){	//Motor (2) Slowest, left side if you see the front of the car, PWM1.4 P1.23 / CAP2.0 P0.4 / When distance is completed
@@ -249,6 +288,10 @@ void TIMER2_IRQHandler(){	//Motor (2) Slowest, left side if you see the front of
 		speed2=LPC_TIM2->CR0-CAP2_0;
 		CAP2_0=LPC_TIM2->CR0;
 		
+		
+		tokencalib_2=1;
+		
+		/*
 		if((speed1)<(speed2)){
 			gain1=gain1*0.9999;
 			gain2=gain2*1.0001;
@@ -259,6 +302,8 @@ void TIMER2_IRQHandler(){	//Motor (2) Slowest, left side if you see the front of
 			gain2=gain2*0.9999;
 			calib(gain1,gain2,speed);
 		}
+		
+		*/
 	}
 	
 }
@@ -286,6 +331,9 @@ void TIMER3_IRQHandler(){	//Reached the value of distance
 		NVIC_DisableIRQ(TIMER2_IRQn);
 		
 		LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16))); // Security Stop
+		
+		
+		
 		pointer_to_data+=3;
 		token=1;
 	}
@@ -405,14 +453,68 @@ uint16_t uint16voltage;
 		LPC_UART3->THR='O';
 	}
 	
+	
+	
+	if(rx_buffer[pointer_to_data]=='R')	{
+		
+		while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+		LPC_UART3->THR='F';
+		
+	}
+	
+	else{
+		
+		if(end_move!=0){
+			
+			switch(sel_song){
+			case 0:
+				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+				LPC_UART3->THR='C';
+			break;
+			
+			case 1:
+				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+				LPC_UART3->THR='B';
+
+			break;
+			
+			case 2:
+				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+				LPC_UART3->THR='D';
+
+			break;
+			
+			default:
+				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+				LPC_UART3->THR='H';
+
+			break;
+			
+			}
+		
+			
+		}
+		
+		else{
+			
+			
+			while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+			LPC_UART3->THR='A'; 
+			
+		}
+		
+	
+	
+	}
+	
+		
+	
 	for(i=2;i>=0;i--){
 		while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);		//Waiting to THR empty
 		LPC_UART3->THR=(char)((uint16voltage%10)+'0');		//Convert each number in to character (the message will be inverted on lavbiew)
 		uint16voltage/=10;
 	}
-	while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
-	LPC_UART3->THR='A';		//Indicate lavbiew is the end of the number we could used other caracter
-
+	
 
 }
 //___________________________________________________________________________________________
@@ -440,19 +542,19 @@ int main(){
   angle = 180;
 
   line = 0;
-  Xpos = 0; Ypos = line*FONT_H;
-  sprintf(lcd_buffer, "Velocity MOTOR 1: %4d", speed1);
-  GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, White, Blue);
+	Xpos = 80; Ypos = line*FONT_H;
+	sprintf(lcd_buffer, "Velocity MOTOR 1: %.2f m/s", (float)(5.5/speed1));//5.5/speed1= velocity in m/s
+	GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, Black, Cyan);
 
-  line = 1;
-  Xpos = 0; Ypos = line*FONT_H;
-  sprintf(lcd_buffer, "Velocity MOTOR 2: %4d", speed2);
-  GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, White, Blue);	
-	
+	line = 1;
+	Xpos = 80; Ypos = line*FONT_H;
+	sprintf(lcd_buffer, "Velocity MOTOR 2: %.2f m/s", (float)(5.5/speed2));//5.5/speed2=velocity in m/s
+	GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, Black, Cyan);
+
   line = 2;
-  Xpos = 0; Ypos = line*FONT_H;
-  sprintf(lcd_buffer, "VOLTAGE: %f", voltage);
-  GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, White, Blue);
+  Xpos = 80; Ypos = line*FONT_H;
+  sprintf(lcd_buffer, "VOLTAGE: %.2fV", voltage);
+  GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, Black, Cyan);
 	
 	
 	
@@ -466,11 +568,103 @@ int main(){
 		
 		
 		
+		if(tokencalib_1==1){
+			
+			
+		
+			if((speed1)<(speed2)){
+				gain1=gain1*0.9999;
+				gain2=gain2*1.0001;
+				calib(gain1,gain2,speed);
+			}
+			if((speed1)>(speed2)){
+				gain1=gain1*1.0001;
+				gain2=gain2*0.9999;
+				calib(gain1,gain2,speed);
+			}
+		
+				
+			line = 0;
+			Xpos = 80; Ypos = line*FONT_H;
+			sprintf(lcd_buffer, "Velocity MOTOR 1: %.2f m/s", (float)(5.5/speed1));//5.5/speed1= velocity in m/s
+			GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, Black, Cyan);
+
+			line = 1;
+			Xpos = 80; Ypos = line*FONT_H;
+			sprintf(lcd_buffer, "Velocity MOTOR 2: %.2f m/s", (float)(5.5/speed2));//5.5/speed2=velocity in m/s
+			GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, Black, Cyan);
+			
+			line = 2;
+				Xpos = 80; Ypos = line*FONT_H;
+				sprintf(lcd_buffer, "VOLTAGE: %.2fV", voltage);
+				GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, Black, Cyan);
+	
+
+			
+			for(p=0;p<100;p++){
+				switch(sel_song){
+				case 0:
+					LCD_DrawLine(160-(p/2), 60+p, 160+(p/2), 60+p , Green);
+					LCD_DrawLine(150, 160+(p/4),170, 160+(p/4), 0xA52F);
+					Xpos = 80; Ypos = 200;
+					sprintf(lcd_buffer, "MERRY CHRISTMAS!!!!!!!" );
+					GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, Red, White);
+
+					break;
+				case 1:
+					LCD_DrawLine(60, 80+(p/2), 260, 80+(p/2) , Red);
+					LCD_DrawLine(60, 130+(p/2), 260, 130+(p/2) , Yellow);
+					LCD_DrawLine(60, 180+(p/2), 260, 180+(p/2) , Red);
+					break;
+				case 2:
+					LCD_DrawLine(160-(p/2), 60+p, 160+(p/2), 60+p , Green);
+					LCD_DrawLine(150, 160+(p/4),170, 160+(p/4), 0xA52F);
+					Xpos = 80; Ypos = 200;
+					sprintf(lcd_buffer, "MERRY CHRISTMAS!!!!!!!" );
+					GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, Red, White);					
+				break;
+				default:
+
+				break;
+				
+
+			}
+		}
+			
+			tokencalib_1=0;
+				
+	}	
+		
+	if (tokencalib_2==1){
+		
+			if((speed1)<(speed2)){
+				gain1=gain1*0.9999;
+				gain2=gain2*1.0001;
+				calib(gain1,gain2,speed);
+			}
+			if((speed1)>(speed2)){
+				gain1=gain1*1.0001;
+				gain2=gain2*0.9999;
+				calib(gain1,gain2,speed);
+			}
+			
+		
+		tokencalib_2=0;
+		
+		
+	}
+		
+		
+		
+		
+		
+		
 		if(token && message){ //KEY1 has been pressed and a message has reached 
 			
 			if(pointer_to_data>=current_size){
 				end_move=0;
 				token=0;
+				message=0;
 				
 				free((void*)rx_buffer);
 				rx_buffer = NULL;
@@ -479,12 +673,6 @@ int main(){
 				pointer_to_data = 0;
 				
 				
-				
-				line = 2;
-				Xpos = 0; Ypos = line*FONT_H;
-				sprintf(lcd_buffer, "VOLTAGE: %f", voltage);
-				GUI_Text(Xpos, Ypos, (uint8_t *)lcd_buffer, White, Blue);
-
 			}
 			
 			
@@ -497,6 +685,7 @@ int main(){
 				case 'V':		//Define speed
 					speed=(((uint8_t)(rx_buffer[pointer_to_data+1]-'0'))*10+(uint8_t)(rx_buffer[pointer_to_data+2]-'0'));
 					pointer_to_data=pointer_to_data+Fc_speed_control(speed);
+					end_move=1;
 
 				break;
 				
@@ -525,7 +714,7 @@ int main(){
 				break;
 				
 				case 'A':		//Define forward movement
-					distance=(uint16_t)((((uint16_t)(rx_buffer[pointer_to_data+1]-'0'))*10+(uint16_t)(rx_buffer[pointer_to_data+2]-'0')));
+					distance=(uint8_t)((((uint8_t)(rx_buffer[pointer_to_data+1]-'0'))*10+(uint8_t)(rx_buffer[pointer_to_data+2]-'0')));
 					set_distance(distance);
 					LPC_TIM1->TCR=(0x1);		//Timer counter and prescaler enable to counting
 					LPC_TIM2->TCR=(0x1);		//Timer counter and prescaler enable to counting
@@ -537,7 +726,7 @@ int main(){
 				break;
 				
 				case 'R':		//Define backwards movement
-					distance=(uint16_t)((((uint16_t)(rx_buffer[pointer_to_data+1]-'0'))*10+(uint16_t)(rx_buffer[pointer_to_data+2]-'0')));
+					distance=(uint8_t)((((uint8_t)(rx_buffer[pointer_to_data+1]-'0'))*10+(uint8_t)(rx_buffer[pointer_to_data+2]-'0')));
 					set_distance(distance);
 					LPC_TIM1->TCR=(0x1);		//Timer counter and prescaler enable to counting
 					LPC_TIM2->TCR=(0x1);		//Timer counter and prescaler enable to counting
@@ -545,7 +734,7 @@ int main(){
 					NVIC_EnableIRQ(TIMER2_IRQn);
 					LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x2)|(0x2<<16);
 					token=0;
-					sel_song=3; //Beep sound
+					
 
 				break;
 				

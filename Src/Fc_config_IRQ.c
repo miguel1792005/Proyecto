@@ -6,7 +6,7 @@ void Fc_config_IRQ(void){
 	NVIC_SetPriorityGrouping(3);
 	//Priority
 	NVIC_SetPriority(ADC_IRQn,8);
-	NVIC_SetPriority(TIMER0_IRQn, 6);
+	NVIC_SetPriority(TIMER0_IRQn, 1);
 	NVIC_SetPriority(TIMER1_IRQn, 4);		
 	NVIC_SetPriority(TIMER2_IRQn, 5);
 	NVIC_SetPriority(TIMER3_IRQn, 0);

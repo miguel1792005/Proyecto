@@ -49,7 +49,7 @@
 
 
 /* Private define ------------------------------------------------------------*/
-#define DISP_ORIENTATION  0  /* angle 0 90 */ 
+#define DISP_ORIENTATION  90  /* angle 0 90 */ 
 
 #if  ( DISP_ORIENTATION == 90 ) || ( DISP_ORIENTATION == 270 )
 
