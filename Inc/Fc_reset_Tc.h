@@ -3,6 +3,6 @@
 
 #include <LPC17xx.h>
 
-void Fc_reset_Tc();
+void Fc_reset_Tc(void);
 
 #endif

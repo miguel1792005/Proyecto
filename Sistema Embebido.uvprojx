@@ -553,6 +553,46 @@
               <FileType>5</FileType>
               <FilePath>.\Inc\eint2_cfg.h</FilePath>
             </File>
+            <File>
+              <FileName>Fc_display_draw.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_display_draw.h</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_display_variable_value.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_display_variable_value.h</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_reset_Tc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\Fc_reset_Tc.h</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_display_draw.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_display_draw.c</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_display_variable_value.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_display_variable_value.c</FilePath>
+            </File>
+            <File>
+              <FileName>Fc_reset_Tc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Fc_reset_Tc.c</FilePath>
+            </File>
+            <File>
+              <FileName>tone_samples.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Inc\tone_samples.h</FilePath>
+            </File>
+            <File>
+              <FileName>tone_samples.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\tone_samples.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

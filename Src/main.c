@@ -1,24 +1,20 @@
-#include <LPC17xx.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
+//	----------------------------------------------------------------------------------------------------
+//	1. SYSTEM AND STANDARD LIBRARIES
+//	----------------------------------------------------------------------------------------------------
+
+#include <LPC17xx.h>	//	DEVICE LIBRARY
+#include <stdlib.h>	//	LIBRARY FOR DYNAMIC MEMORY (MALLOC, FREE, NULL)
+
+//	----------------------------------------------------------------------------------------------------
+//	2. LCD AND GRAPHICS LIBRARIES
+//	----------------------------------------------------------------------------------------------------
 
 #include "AsciiLib.h"
 #include "GLCD.h" 
-#include <stdio.h>
 
-uint16_t Xpos, Ypos;
-  int line;
-  int dist_cm, angle;
-  
-#define F_CPU       (SystemCoreClock)
-#define F_PCLK      (F_CPU/4)
-
-#define FONT_W  8
-#define FONT_H  16
-
-static char lcd_buffer[256];
+//	----------------------------------------------------------------------------------------------------
+//	3. FUNCTIONS LIBRARIES
+//	----------------------------------------------------------------------------------------------------
 
 #include "Fc_config_pines.h"
 #include "Fc_config_PWM.h"
@@ -37,24 +33,54 @@ static char lcd_buffer[256];
 #include "Fc_display_variable_value.h"
 #include "Fc_display_draw.h"
 #include "Fc_reset_Tc.h"
+#include "tone_samples.h"
 
+//	----------------------------------------------------------------------------------------------------
+//	4. SYSTEM DEFINITIONS
+//	----------------------------------------------------------------------------------------------------
+
+#define F_CPU       (SystemCoreClock)
+#define F_PCLK      (F_CPU/4)
 #define FCPU 25000000
+
+//	----------------------------------------------------------------------------------------------------
+//	5. MATH AND CONVERSION CONSTANTS
+//	----------------------------------------------------------------------------------------------------
+
+#define PI 3.1415926535897932384626433832795f
+#define K2 (8.0f * (PI/180.f))	//	CONVERSION FROM ANGLE TO DISTANCE OF WHEELS
+
+//	----------------------------------------------------------------------------------------------------
+//	6. UART COMMUNICATION CONSTANTS
+//	----------------------------------------------------------------------------------------------------
 
 #define END1 '\n'
 #define END2 '\r'
 
+//	----------------------------------------------------------------------------------------------------
+//	7. ADC AND WHEEL CALIBRATION CONSTANTS
+//	----------------------------------------------------------------------------------------------------
+
 #define N_OFFSETADC	0
 #define GAIN_ADC 2.8f //2.33
 
-#define PI 3.1415926535897932384626433832795f
-#define K2 8*(PI/180)
+//	----------------------------------------------------------------------------------------------------
+//	8. LCD DISPLAY CONSTANTS
+//	----------------------------------------------------------------------------------------------------
 
+#define FONT_W  8
+#define FONT_H  16
+static char lcd_buffer[256];	//	BUFFER FOR LCD TEXT
+
+//	----------------------------------------------------------------------------------------------------
+//	9. AUDIO(DAC) CONSTANTS
+//	----------------------------------------------------------------------------------------------------
 
 #define N_POINTS 20
-#define DAC_N_BITS 10
 #define DAC_N_LEVELS (1U << DAC_N_BITS)
-#define DAC_MID_RANGE (1U << (DAC_N_BITS-1))
-#define PI 3.1415926535897932384626433832795f
+
+
+//	NOTE FREQUENCIES AND ARRAY SIZE OF SONGS
 
 #define DO	260
 #define RE	290
@@ -63,61 +89,71 @@ static char lcd_buffer[256];
 #define SOL	390
 #define LA	440
 #define SI	490
-#define notese	24
-#define notesr	30
-#define notesn	20
+
+#define notesnav	20
+#define notesesp	24
+#define notesblan	30
 #define notesb	12
 
-
+//	----------------------------------------------------------------------------------------------------
+//	10. COMMUNICATION VARIABLES
+//	----------------------------------------------------------------------------------------------------
 
 volatile uint8_t *rx_buffer=NULL;	//	DYNAMIC BUFFER FOR SAVING THE MESSAGE
 volatile uint16_t current_size=0;	//	VAR. TO SAVE THE SIZE OF THE DYNAMIC BUFFER
 volatile uint16_t pointer_to_data=0;	//	POINTER FOR READING THE RECEIVED MESSAGE
-uint8_t message=0; //	FLAG ACTIVE WHEN THE MESSAGE HAS BEEN RECEIVED
+volatile uint8_t message=0; //	FLAG ACTIVE WHEN THE MESSAGE HAS BEEN RECEIVED
+int8_t loop=2;	//	COUNTER TO SEND 3 CHARACTERS OF VOLTAGE
+
+//	----------------------------------------------------------------------------------------------------
+//	11. CONTROL FLAGS
+//	----------------------------------------------------------------------------------------------------
 
 volatile uint8_t token=0; // FLAG TO START THE MOVEMENT AFTER PRESSING KEY1
 volatile uint8_t tokencalib_1=0; //	FLAG THAT ACTIVATES THE CALIBRATION OF WHEEL 1
 volatile uint8_t tokencalib_2=0; //	FLAG THAT ACTIVATES THE CALIBRATION OF WHEEL 2
+volatile uint8_t tokendisplay=0;	//	COUNTER OF 100 PULSES OF THE ENCODER TO UPDATE VARIABLES ON DISPLAY
+volatile uint8_t end_move=0;	// FLAG TO DETECT THE STATE OF THE ROBOT
+volatile uint8_t adc_ready=0;	//	FLAG TO DETECT THE READ OF ADC
+volatile uint8_t key2=0;	//	FLAG TO DETECT SELECTION OF SONG CHANGED
+
+//	----------------------------------------------------------------------------------------------------
+//	12. MOTOR CALIBRATION VARIABLES
+//	----------------------------------------------------------------------------------------------------
 
 volatile uint8_t speed;	//	VAR. THAT STORES THE PORCENTUAL SPEED RECEIVED (CHAR->UINT8_T)
 volatile uint8_t distance;	// VAR. THAT STORES THE DISTANCE RECEIVED (CHAR->UINT8_T)
-
-volatile float gain1=1;	//	GAIN TO CALIBRATE SPEED OF WHEEL 1
-volatile float gain2=1;	//	GAIN TO CALIBRATE SPEED OF WHEEL 2
-
+volatile float gain1=1.0f;	//	GAIN TO CALIBRATE SPEED OF WHEEL 1
+volatile float gain2=1.0f;	//	GAIN TO CALIBRATE SPEED OF WHEEL 2
 volatile uint32_t speed1=0;	//	TIME BETWEEN EDGES OF ENCODER OF MOTOR 1 (SPEED WHEEL 1)
 volatile uint32_t speed2=0;	//	TIME BETWEEN EDGES OF ENCODER OF MOTOR 2 (SPEED WHEEL 2)
 volatile uint32_t CAP1_0=0;	//	VAR. TO STORE THE VALUE OF TC OF LAST CAPTURE (MOTOR 1)
 volatile uint32_t CAP2_0=0;	//	VAR. TO STORE THE VALUE OF TC OF LAST CAPTURE (MOTOR 2)
 
-float voltage=0;	//	VOLTAGE OF BATTERY MEASURE FROM ADC
+//	----------------------------------------------------------------------------------------------------
+//	13. DISPLAY VARIABLES
+//	----------------------------------------------------------------------------------------------------
 
-uint8_t end_move=0;	// FLAG TO DETECT THE STATE OF THE ROBOT
+volatile float voltage=0;	//	VOLTAGE OF BATTERY MEASURE FROM ADC
+volatile uint16_t uint16voltage;	//	TEMPORARY VARIABLE TO SEND 3 DIGITS OF VOLTAGE THROUGH UART
+uint16_t Xpos, Ypos;	//	LCD (X,Y) COORDINATES
+int line;
+int dist_cm, angle;	//	MOVEMENT PARAMETERS
 
-uint8_t sel_song=0;	//	VAR. TO SELECT A SONG
-uint16_t Espana[notese]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,FA,FA,FA,FA,FA,FA,FA,FA};	 //ESPAÑA
-uint16_t navidad[notesn]={SOL,DO*2,DO*2,SI,DO*2,LA,LA,LA,LA,0,LA,RE*2,RE*2,DO*2,LA,SOL,SOL,SOL,SOL,0};	//	FELIZ NAVIDAD
-uint16_t blanca[notesr]={LA,LA,LA,LA,LA+20,LA,SOL+20,LA,LA+20,LA+20,LA+20,LA+20,SI,DO*2,DO*2,DO*2,DO*2,RE,MI,FA,SOL,FA,MI,RE,DO,DO,DO,DO,DO,DO};	//	OH BLANCA NAVIDAD
-uint16_t Beep[notesb]={600,500,600,500,600,500,600,500,600,500,600,500}; //Beep while backwards moving is performed
-uint16_t Silence=0;	//	Silence
+//	----------------------------------------------------------------------------------------------------
+//	14. SONG VARIABLES
+//	----------------------------------------------------------------------------------------------------
+
+static const uint16_t navidad[notesnav]={SOL,DO*2,DO*2,SI,DO*2,LA,LA,LA,LA,0,LA,RE*2,RE*2,DO*2,LA,SOL,SOL,SOL,SOL,0};	//	FELIZ NAVIDAD
+static const uint16_t Espana[notesesp]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,FA,FA,FA,FA,FA,FA,FA,FA};	 //ESPAÑA
+static const uint16_t blanca[notesblan]={LA,LA,LA,LA,LA+20,LA,SOL+20,LA,LA+20,LA+20,LA+20,LA+20,SI,DO*2,DO*2,DO*2,DO*2,RE,MI,FA,SOL,FA,MI,RE,DO,DO,DO,DO,DO,DO};	//	OH BLANCA NAVIDAD
+static const uint16_t Beep[notesb]={600,500,600,500,600,500,600,500,600,500,600,500}; //Beep while backwards moving is performed
+static const uint16_t Silence=1;	//	SILENCE
 uint8_t index_song=0;	//	POINTER TO CHORD OF THE SONG
-
-
-uint8_t p;
-
 static uint16_t sample_table[N_POINTS];	//	ARRAY OF VALUES OF A SINE
 static int sample_idx;	//	POINTER TO THE ARRAY OF SINES
-
-void tone_init_samples() {
-		int i;
-		float x;
-	
-		for(i=0;i<N_POINTS;i++) {
-				x=DAC_MID_RANGE+(DAC_MID_RANGE-1)*sinf((2*PI/(N_POINTS))*i);
-				sample_table[i]=((uint16_t)x)<<6;
-		}
-		sample_idx = 0;
-}
+volatile uint8_t sel_song=0; // VAR. TO SELECT A SONG
+volatile uint8_t i=0;	//	COUNTER TO PRODUCE ARRAY OF SINE VALUES
 
 //__________________________________________EINT1|BUTTON|KEY1______________________________________________
 void EINT1_IRQHandler(){
@@ -132,8 +168,8 @@ void EINT2_IRQHandler(){
 	LPC_SC->EXTINT=0x4;	//	CLEAR FLAG OF IRQ	
 	sel_song++;	//	SELECT THE NEXT SONG	
 	index_song=0;	// POINT TO THE START OF THE SONG
-	sample_idx=0;	//	POINT TO THE FIRST VALUE OF THE SINE	
-	LCD_Clear(Cyan);	
+	sample_idx=0;	//	POINT TO THE FIRST VALUE OF THE SINE
+	key2=1;	
 	if(sel_song>=2&&rx_buffer[pointer_to_data]!='R'){		
 		sel_song=0;	//	CIRCULAR SELECTION OF SONG	
 	}
@@ -179,15 +215,15 @@ void TIMER0_IRQHandler(){	//	GENERATE THE SOUND SIGNAL WITH DAC
 		switch(sel_song){
 		case 0:
 			LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*navidad[index_song]))-1);		//Start with DO	20 samples
-			index_song=(index_song>=(notesn-1))?0:index_song+1;
+			index_song=(index_song>=(notesnav-1))?0:index_song+1;
 		break;
 		case 1:			
 			LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Espana[index_song]))-1);		//Start with DO	20 samples
-			index_song=(index_song>=(notese-1))?0:index_song+1;
+			index_song=(index_song>=(notesesp-1))?0:index_song+1;
 		break;			
 		case 2:
 			LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*blanca[index_song]))-1);		//Start with DO	20 samples
-			index_song=(index_song>=(notesr-1))?0:index_song+1;
+			index_song=(index_song>=(notesblan-1))?0:index_song+1;
 		break;			
 		default:
 			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Silence))-1);
@@ -246,8 +282,6 @@ void TIMER3_IRQHandler(){	//Reached the value of distance
 		
 		LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16))); // Security Stop
 		
-		
-		
 		pointer_to_data+=3;
 		token=1;
 	}
@@ -293,52 +327,11 @@ void UART3_IRQHandler(){
 }
 
 void ADC_IRQHandler(){
-	int8_t i=2;
-	uint16_t uint16voltage;
 	
-	voltage=(float)(GAIN_ADC*(N_OFFSETADC+(float)3.3*(((float)((LPC_ADC->ADDR1>>4)&0xFFF))/(float)0xFFF)));		//OBTAINE VALUE OF VOLTAGE
-	uint16voltage=(uint16_t)(voltage*100);		//CONVERT IN TO DECIMAL
-	if(end_move==0){
-		while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
-		LPC_UART3->THR='A'; //INDICATE LABVIEW MODE WAITING AND SILENCE
-	}
-	else{
-		while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
-		LPC_UART3->THR='O';	//INDICATE LABVIEW MODE WORKING
-	}	
-	if(rx_buffer[pointer_to_data]=='R')	{		
-		while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
-		LPC_UART3->THR='F';	
-	}else{		
-		if(end_move!=0){			
-			switch(sel_song){
-			case 0:
-				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
-				LPC_UART3->THR='C';
-			break;		
-			case 1:
-				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
-				LPC_UART3->THR='B';
-			break;			
-			case 2:
-				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
-				LPC_UART3->THR='D';
-			break;			
-			default:
-				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
-				LPC_UART3->THR='H';
-			break;			
-			}			
-		}else{						
-			while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
-			LPC_UART3->THR='A'; 			
-		}				
-	}	
-	for(i=2;i>=0;i--){
-		while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);		//Waiting to THR empty
-		LPC_UART3->THR=(char)((uint16voltage%10)+'0');		//Convert each number in to character (the message will be inverted on lavbiew)
-		uint16voltage/=10;
-	}
+	voltage=(float)(GAIN_ADC*(N_OFFSETADC+(float)3.3*(((float)((LPC_ADC->ADDR1>>4)&0xFFF))/(float)0xFFF)));	//	OBTAINE VALUE OF VOLTAGE
+	uint16voltage=(uint16_t)(voltage*100);	//	CONVERSION TO DECIMAL
+	adc_ready=1;
+	
 }
 //___________________________________________________________________________________________
 int main(){
@@ -357,10 +350,76 @@ int main(){
 	Fc_display_variable_value(speed1,speed2,voltage,Xpos,Ypos,line,dist_cm,angle,lcd_buffer);
 //-------------------------------------------------------------------------------------------------------			
 	NVIC_EnableIRQ(UART0_IRQn);
-	NVIC_EnableIRQ(UART3_IRQn);	
-	tone_init_samples();
+	NVIC_EnableIRQ(UART3_IRQn);
 	
-	while(1){	
+	for(i=0;i<N_POINTS;i++){
+	sample_table[i]=tone_init_samples(i);
+	}
+	sample_idx = 0;
+	
+	while(1){
+		
+		if(adc_ready==1){
+			
+			if(end_move==0){
+				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+				LPC_UART3->THR='A'; //INDICATE LABVIEW MODE WAITING AND SILENCE
+			}
+			else{
+				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+				LPC_UART3->THR='O';	//INDICATE LABVIEW MODE WORKING
+			}
+			
+			if(rx_buffer[pointer_to_data]=='R')	{		
+				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+				LPC_UART3->THR='F';	
+			}
+			else{		
+				if(end_move!=0){			
+					switch(sel_song){
+						case 0:
+							while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+							LPC_UART3->THR='C';
+							break;		
+						case 1:
+							while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+							LPC_UART3->THR='B';
+							break;			
+						case 2:
+							while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+							LPC_UART3->THR='D';
+							break;			
+						default:
+							while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+							LPC_UART3->THR='H';
+							break;						
+					}
+				}
+				else{
+					while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);
+					LPC_UART3->THR='A'; 			
+				}
+			}
+			for(loop=2;loop>=0;loop--){
+				while(((LPC_UART3->LSR&(0x1<<5))>>5)==0);		//Waiting to THR empty
+				LPC_UART3->THR=(char)((uint16voltage%10)+'0');		//Convert each number in to character (the message will be inverted on lavbiew)
+				uint16voltage/=10;
+			}
+			
+			
+			adc_ready=0;
+			
+		}
+		
+		if(key2==1){
+			
+			LCD_Clear(Cyan);
+			Fc_display_draw(sel_song,Xpos,Ypos,line,dist_cm,angle,lcd_buffer);
+			key2=0;
+			
+		}
+		
+		
 		if(tokencalib_1==1){	
 			if((speed1)<(speed2)){
 				gain1=gain1*0.9999;
@@ -372,10 +431,15 @@ int main(){
 				gain2=gain2*0.9999;
 				calib(gain1,gain2,speed);
 			}
+			
 //------------------------------------------------DISPLAY------------------------------------------------		
-			Fc_display_variable_value(speed1,speed2,voltage,Xpos,Ypos,line,dist_cm,angle,lcd_buffer);
-			Fc_display_draw(p,sel_song,Xpos,Ypos,line,dist_cm,angle,lcd_buffer);
-//-------------------------------------------------------------------------------------------------------					
+			if(tokendisplay>=99){	//	UPDATE VARIABLES SHOWN ON THE SCREEN EACH 100 PULSES OF THE ENCODER
+				Fc_display_variable_value(speed1,speed2,voltage,Xpos,Ypos,line,dist_cm,angle,lcd_buffer);
+				tokendisplay=0;
+			}
+//-------------------------------------------------------------------------------------------------------
+			
+			tokendisplay++;
 			tokencalib_1=0;				
 		}			
 		if (tokencalib_2==1){		

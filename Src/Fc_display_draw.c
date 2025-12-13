@@ -11,7 +11,9 @@
 #define FONT_W  8
 #define FONT_H  16
 
-void Fc_display_draw(uint8_t p,uint8_t sel_song,uint16_t Xpos,uint16_t Ypos,int line,int dist_cm,int angle,char *lcd_buffer){
+void Fc_display_draw(uint8_t sel_song,uint16_t Xpos,uint16_t Ypos,int line,int dist_cm,int angle,char *lcd_buffer){
+	uint8_t p=0;
+	
 	for(p=0;p<100;p++){
 		switch(sel_song){
 		case 0:
