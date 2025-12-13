@@ -2,21 +2,21 @@
 
 void Fc_config_IRQ(void){
 	
-	//Prigroup
+	//PRIGROUP
 	NVIC_SetPriorityGrouping(3);
-	//Priority
+	//PRIORITY
 	NVIC_SetPriority(ADC_IRQn,8);
 	NVIC_SetPriority(TIMER0_IRQn, 1);
 	NVIC_SetPriority(TIMER1_IRQn, 4);		
 	NVIC_SetPriority(TIMER2_IRQn, 5);
 	NVIC_SetPriority(TIMER3_IRQn, 0);
-	//Enable
+	//ENABLE
 	NVIC_EnableIRQ(TIMER0_IRQn);
 	NVIC_EnableIRQ(TIMER1_IRQn);
 	NVIC_EnableIRQ(TIMER2_IRQn);
 	NVIC_EnableIRQ(TIMER3_IRQn);
 	NVIC_EnableIRQ(ADC_IRQn);
 	
-	LPC_PWM1->TCR=(0x9<<0); //PWM counter and prescaler enable to counting
+	LPC_PWM1->TCR=(0x9<<0);	//	PWM COUNTER AND PRESCALER ENABLE TO COUNTING
 	
 }

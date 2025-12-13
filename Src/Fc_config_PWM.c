@@ -2,18 +2,18 @@
 
 void Fc_config_PWM(void){
 	
-	LPC_SC->PCLKSEL0=(LPC_SC->PCLKSEL0&~(0x3<<12));		//Clear bits 3:2 and pclk_peripheral pwm1=cclk/4
-	LPC_SC->PCONP|=(1<<6);		//start PWM1
-	LPC_PWM1->TCR=(0x1<<1); //Reset PWM counter and prescaler
-	LPC_PWM1->CTCR&=~(0x3);		//PWM to Counting mode
-	LPC_PWM1->MCR=(0x1<<1);		//Reset PWM counter when the value of MR0=PWM Counter
-	LPC_PWM1->MR0=12500;  //12500=0.5ms->2kHz
-	LPC_PWM1->LER=(0x1<<0);		//Enable to change the value of MR0 
+	LPC_SC->PCLKSEL0=(LPC_SC->PCLKSEL0&~(0x3<<12));	//	CLEAR BITS 3:2 AND PCLK_PERIPHERAL PWM1=CCLK/4
+	LPC_SC->PCONP|=(1<<6);	//	START PWM1
+	LPC_PWM1->TCR=(0x1<<1);	//	RESET PWM COUNTER AND PRESCALER
+	LPC_PWM1->CTCR&=~(0x3);	//	PWM TO COUNTING MODE
+	LPC_PWM1->MCR=(0x1<<1);	//	RESET PWM COUNTER WHEN THE VALUE OF MR0=PWM COUNTER
+	LPC_PWM1->MR0=12500;	//	12500=0.5MS->2KHZ
+	LPC_PWM1->LER=(0x1<<0);	//	ENABLE TO CHANGE THE VALUE OF MR0 
 	LPC_PWM1->MR2=0;	
-	LPC_PWM1->LER|=(0x1<<2);		//Enable to change the value of MR2
+	LPC_PWM1->LER|=(0x1<<2);	//	ENABLE TO CHANGE THE VALUE OF MR2
 	LPC_PWM1->MR4=0;
-	LPC_PWM1->LER|=(0x1<<4);		//Enable to change the value of MR4
+	LPC_PWM1->LER|=(0x1<<4);	//	ENABLE TO CHANGE THE VALUE OF MR4
 	
-	LPC_PWM1->PCR|=((1<<10)|(1<<12)); //Enable source
+	LPC_PWM1->PCR|=((1<<10)|(1<<12));	//	ENABLE SOURCE
 	
 }

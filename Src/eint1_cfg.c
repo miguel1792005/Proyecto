@@ -1,8 +1,8 @@
 #include "LPC17xx.h"
 
 void eint1_cfg(){
-	LPC_SC->EXTMODE|=0x2; //EINT1 edge sensitive
-	LPC_SC->EXTPOLAR&=~(0x2); //EINT1 rising-edge sensitive
+	LPC_SC->EXTMODE|=0x2; //	EINT1 EDGE SENSITIVE
+	LPC_SC->EXTPOLAR&=~(0x2); //	EINT1 RISING-EDGE SENSITIVE
 	NVIC_EnableIRQ(EINT1_IRQn);
 	NVIC_SetPriority(EINT1_IRQn,0);
 }

@@ -3,12 +3,12 @@
 void usb_cfg(void){
 	
 	LPC_SC->PCONP|=(0x1<<3);
-	LPC_SC->PCLKSEL0=(LPC_SC->PCLKSEL0&~(0x3<<6))|(0x1<<6);		//Configurate clock of pheriperal uart0 to =CCLK=100Mhz
-	LPC_UART0->LCR=(LPC_UART0->LCR&~(0x7F))|(0x3)|(0x1<<7);		//Word lenght 8=char,stop bit & parity & break control to 0, enable divisor lach
-	LPC_UART0->DLM=2;		//Expresion used to take the baud rate in page n323 with reset value of DIVadd=0/Mulvaal=1
+	LPC_SC->PCLKSEL0=(LPC_SC->PCLKSEL0&~(0x3<<6))|(0x1<<6);	//	CONFIGURATE CLOCK OF PHERIPERAL UART0 TO =CCLK=100MHZ
+	LPC_UART0->LCR=(LPC_UART0->LCR&~(0x7F))|(0x3)|(0x1<<7);	//	WORD LENGHT 8=CHAR,STOP BIT & PARITY & BREAK CONTROL TO 0, ENABLE DIVISOR LACH
+	LPC_UART0->DLM=2;	//	EXPRESION USED TO TAKE THE BAUD RATE IN PAGE N323 WITH RESET VALUE OF DIVADD=0/MULVAAL=1
 	LPC_UART0->DLL=139;
-	LPC_UART0->LCR&=~(0x1<<7);		// Disable divisor lach
-	LPC_UART0->FCR=(LPC_UART0->FCR&~(0xFF))|(0x7);		// Enable FIFO and reset FIFO RX, RX trigger level 0 Interrupt for Interrupt for each char sent
+	LPC_UART0->LCR&=~(0x1<<7);	//	DISABLE DIVISOR LACH
+	LPC_UART0->FCR=(LPC_UART0->FCR&~(0xFF))|(0x7);	//	ENABLE FIFO AND RESET FIFO RX/TX, RX TRIGGER LEVEL 0 INTERRUPT FOR EACH CHAR 
 	
-	LPC_UART0->IER|=(0x1);		//Enable interruption
+	LPC_UART0->IER|=(0x1);	//	ENABLE INTERRUPTION
 }

@@ -6,5 +6,5 @@
 void set_distance(uint8_t D){
 	LPC_TIM3->IR=0xFF;
 	LPC_TIM3->MR0=(uint32_t)(K1*D);
-	LPC_TIM3->TCR=(0x1);		//Timer counter and prescaler enable to counting
+	LPC_TIM3->TCR=(0x1);	//	TIMER COUNTER AND PRESCALER ENABLE TO COUNTING
 }
