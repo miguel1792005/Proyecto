@@ -185,24 +185,24 @@ void TIMER0_IRQHandler(){	//	GENERATE THE SOUND SIGNAL WITH DAC
 		if(rx_buffer[pointer_to_data]!='R'&&end_move!=0){	//	CHANGE THE FRECUENCY OF THE SINE DAC WITH SEL_SONG 
 			switch(sel_song){
 				case 0:
-					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*navidad[index_song]))-1);	//	MERRY CHRISTMAS, EACH POINT OF SINE, WORKING MODE
+					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((F_PCLK)/(N_POINTS*navidad[index_song]))-1);	//	MERRY CHRISTMAS, EACH POINT OF SINE, WORKING MODE
 					break;
 				case 1:
-					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Espana[index_song]))-1);	//	ESPAÑA, EACH POINT OF SINE, WORKING MODE
+					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((F_PCLK)/(N_POINTS*Espana[index_song]))-1);	//	ESPAÑA, EACH POINT OF SINE, WORKING MODE
 					break;
 				case 2:
-					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*blanca[index_song]))-1);	//	WHITE CHRISTMAS, EACH POINT OF SINE, WORKING MODE
+					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((F_PCLK)/(N_POINTS*blanca[index_song]))-1);	//	WHITE CHRISTMAS, EACH POINT OF SINE, WORKING MODE
 					break;
 				default:
-					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Silence))-1);	//	SILENCE 
+					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((F_PCLK)/(N_POINTS*Silence))-1);	//	SILENCE 
 					break;
 			}
 		}		
 		if(end_move==0){					
-			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Silence))-1);	//	SILENCE, WAITING MODE
+			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((F_PCLK)/(N_POINTS*Silence))-1);	//	SILENCE, WAITING MODE
 		}	
 		if(rx_buffer[pointer_to_data]=='R'){					
-			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Beep[index_song]))-1);	//	BEEP WHEN BACKWARD MOVEMENT, EACH POINT OF SINE, WORKING MODE
+			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((F_PCLK)/(N_POINTS*Beep[index_song]))-1);	//	BEEP WHEN BACKWARD MOVEMENT, EACH POINT OF SINE, WORKING MODE
 		}
 	}	
 	
@@ -212,27 +212,27 @@ void TIMER0_IRQHandler(){	//	GENERATE THE SOUND SIGNAL WITH DAC
 		if(rx_buffer[pointer_to_data]!='R'&&end_move!=0){	//	CHANGE THE FRECUENCY OF THE SINE DAC WITH SEL_SONG 
 			switch(sel_song){
 				case 0:
-					LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*navidad[index_song]))-1);	//	MERRY CHRISTMAS, CHANGE THE NOTE OF THE SIGN, WORKING MODE		
+					LPC_TIM0->MR0=(uint16_t)(((F_PCLK)/(N_POINTS*navidad[index_song]))-1);	//	MERRY CHRISTMAS, CHANGE THE NOTE OF THE SIGN, WORKING MODE		
 					index_song=(index_song>=(notesnav-1))?0:index_song+1;
 					break;
 				case 1:			
-					LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Espana[index_song]))-1);	//	ESPAÑA, CHANGE THE NOTE OF THE SIGN, WORKING MODE
+					LPC_TIM0->MR0=(uint16_t)(((F_PCLK)/(N_POINTS*Espana[index_song]))-1);	//	ESPAÑA, CHANGE THE NOTE OF THE SIGN, WORKING MODE
 					index_song=(index_song>=(notesesp-1))?0:index_song+1;
 					break;			
 				case 2:
-					LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*blanca[index_song]))-1);	//	WHITE CHRISTMAS, CHANGE THE NOTE OF THE SIGN, WORKING MODE
+					LPC_TIM0->MR0=(uint16_t)(((F_PCLK)/(N_POINTS*blanca[index_song]))-1);	//	WHITE CHRISTMAS, CHANGE THE NOTE OF THE SIGN, WORKING MODE
 					index_song=(index_song>=(notesblan-1))?0:index_song+1;
 					break;			
 				default:
-					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Silence))-1);	//	SILENCE 
+					LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((F_PCLK)/(N_POINTS*Silence))-1);	//	SILENCE 
 					break;			
 			}		
 		}		
 		if(end_move==0){					
-			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((FCPU/4)/(20*Silence))-1);	//	SILENCE, WAITING MODE
+			LPC_TIM0->MR0=(uint32_t)(LPC_TIM0->MR0+((F_PCLK)/(N_POINTS*Silence))-1);	//	SILENCE, WAITING MODE
 		}				
 		if(rx_buffer[pointer_to_data]=='R'){				
-			LPC_TIM0->MR0=(uint16_t)(((FCPU/4)/(20*Beep[index_song]))-1);	//	BEEP WHEN BACKWARD MOVEMENT, CHANGE THE NOTE OF THE SIGN, WORKING MODE
+			LPC_TIM0->MR0=(uint16_t)(((F_PCLK)/(N_POINTS*Beep[index_song]))-1);	//	BEEP WHEN BACKWARD MOVEMENT, CHANGE THE NOTE OF THE SIGN, WORKING MODE
 			index_song=(index_song>=(notesb-1))?0:index_song+1;			
 		}
 	}
@@ -302,16 +302,20 @@ void UART3_IRQHandler(){	//	COMMUNICATION WITH LAVBIEW WITH BLUETOOTH
 		uint8_t received_char3=LPC_UART3->RBR;
 		uint8_t *temp_pointer3;
 
-		if((received_char3!=END1)&(received_char3!=END2)){	//	IT IS EXECUTED IF THERE IS NO "LINE BREAK" IN THE MESSAGE
-			temp_pointer3=(uint8_t *)realloc((void*)rx_buffer,current_size+1);	//	INCREMENT THE DINAMIC MEMMORY WITH FC REALLOC
-			if(temp_pointer3!=NULL){	//	SAFE THE CHARACTER ON RX_BUFFER WHEN THERE IS SPACE			
-				rx_buffer=temp_pointer3;			
-				rx_buffer[current_size]=received_char3;
-				current_size++;				
+		if(message==0){
+			if((received_char3!=END1)&(received_char3!=END2)){	//	IT IS EXECUTED IF THERE IS NO "LINE BREAK" IN THE MESSAGE
+				temp_pointer3=(uint8_t *)realloc((void*)rx_buffer,current_size+1);	//	INCREMENT THE DINAMIC MEMMORY WITH FC REALLOC
+				if(temp_pointer3!=NULL){	//	SAFE THE CHARACTER ON RX_BUFFER WHEN THERE IS SPACE			
+					rx_buffer=temp_pointer3;			
+					rx_buffer[current_size]=received_char3;
+					current_size++;				
+				}			
 			}			
-		}			
-		if(((received_char3==END1)||(received_char3==END2))){	//	WHEN "LINE BREAKS" COMES THE MESSAGE IS FULL RECIVED					
-			message=1;		
+			if(((received_char3==END1)||(received_char3==END2))){	//	WHEN "LINE BREAKS" COMES THE MESSAGE IS FULL RECIVED					
+				message=1;		
+			}
+		}else{
+			NVIC_SetPendingIRQ(EINT2_IRQn);	//	CHANGE THE MUSIC FROM LAVBIEW
 		}
 	}
 }

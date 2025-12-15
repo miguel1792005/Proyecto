@@ -1,7 +1,4 @@
 #include "LPC17xx.h"
-#define	F_CCLK	(SystemCoreClock)
-#define F_PCLK	(SystemCoreClock/4)
-#define FREQ
 
 void adc_cfg(void) {
 	LPC_SC->PCLKSEL0&=~(0x3<<24); // CLEAR BITS 25:24
@@ -13,5 +10,3 @@ void adc_cfg(void) {
 	LPC_ADC->ADINTEN=0x1<<1;	// JUST AD0.1 INTERRUPT ENABLE
 	LPC_ADC->ADCR|=(0x01U<<21); //	POWER ON
 }
-
-
