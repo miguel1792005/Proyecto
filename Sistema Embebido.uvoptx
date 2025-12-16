@@ -79,8 +79,8 @@
       </OPTFL>
       <CpuCode>8</CpuCode>
       <DebugOpt>
-        <uSim>1</uSim>
-        <uTrg>0</uTrg>
+        <uSim>0</uSim>
+        <uTrg>1</uTrg>
         <sLdApp>1</sLdApp>
         <sGomain>1</sGomain>
         <sRbreak>1</sRbreak>
@@ -140,7 +140,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGDARM</Key>
-          <Name>(1010=1127,308,1512,864,0)(1007=-1,-1,-1,-1,0)(1008=-1,-1,-1,-1,0)(1009=-1,-1,-1,-1,0)(1012=-1,-1,-1,-1,0)(350=113,145,362,399,0)(250=-1,-1,-1,-1,0)(270=-1,-1,-1,-1,0)(313=-1,-1,-1,-1,0)(291=-1,-1,-1,-1,0)(302=-1,-1,-1,-1,0)(110=-1,-1,-1,-1,0)(113=-1,-1,-1,-1,0)(320=-1,-1,-1,-1,0)(210=-1,-1,-1,-1,0)(330=0,237,381,864,0)(332=758,147,1356,352,0)(333=913,427,1511,632,0)(334=33,545,631,750,1)(335=-1,-1,-1,-1,0)(336=150,186,748,391,0)(345=-1,-1,-1,-1,0)(346=150,186,748,391,0)(381=-1,-1,-1,-1,0)(382=-1,-1,-1,-1,0)(383=-1,-1,-1,-1,0)(384=-1,-1,-1,-1,0)(197=-1,-1,-1,-1,0)(198=-1,-1,-1,-1,0)(191=-1,-1,-1,-1,0)(192=-1,-1,-1,-1,0)(199=-1,-1,-1,-1,0)(180=-1,-1,-1,-1,0)(261=-1,-1,-1,-1,0)(262=-1,-1,-1,-1,0)(231=-1,-1,-1,-1,0)(232=-1,-1,-1,-1,0)(233=-1,-1,-1,-1,0)(121=94,360,620,864,0)(122=44,360,570,864,0)(123=1001,179,1527,683,0)(124=467,302,993,806,0)(170=-1,-1,-1,-1,0)(142=995,155,1521,764,0)(150=-1,-1,-1,-1,0)(400=-1,-1,-1,-1,0)(370=-1,-1,-1,-1,0)(160=-1,-1,-1,-1,0)(280=1065,343,1507,918,1)(240=952,198,1319,395,0)</Name>
+          <Name>(1010=1127,308,1512,864,0)(1007=-1,-1,-1,-1,0)(1008=-1,-1,-1,-1,0)(1009=-1,-1,-1,-1,0)(1012=-1,-1,-1,-1,0)(350=113,145,362,399,0)(250=-1,-1,-1,-1,0)(270=-1,-1,-1,-1,0)(313=-1,-1,-1,-1,0)(291=-1,-1,-1,-1,0)(302=-1,-1,-1,-1,0)(110=-1,-1,-1,-1,0)(113=-1,-1,-1,-1,0)(320=-1,-1,-1,-1,0)(210=-1,-1,-1,-1,0)(330=0,237,381,864,0)(332=758,147,1356,352,0)(333=913,427,1511,632,0)(334=33,545,631,750,1)(335=-1,-1,-1,-1,0)(336=150,186,748,391,0)(345=-1,-1,-1,-1,0)(346=150,186,748,391,0)(381=-1,-1,-1,-1,0)(382=-1,-1,-1,-1,0)(383=-1,-1,-1,-1,0)(384=-1,-1,-1,-1,0)(197=-1,-1,-1,-1,0)(198=-1,-1,-1,-1,0)(191=-1,-1,-1,-1,0)(192=-1,-1,-1,-1,0)(199=-1,-1,-1,-1,0)(180=-1,-1,-1,-1,0)(261=-1,-1,-1,-1,0)(262=-1,-1,-1,-1,0)(231=-1,-1,-1,-1,0)(232=-1,-1,-1,-1,0)(233=-1,-1,-1,-1,0)(121=94,360,620,864,0)(122=44,360,570,864,0)(123=1001,179,1527,683,0)(124=467,302,993,806,0)(170=-1,-1,-1,-1,0)(142=995,155,1521,764,0)(150=-1,-1,-1,-1,0)(400=-1,-1,-1,-1,0)(370=-1,-1,-1,-1,0)(160=-1,-1,-1,-1,0)(280=1088,26,1530,601,0)(240=952,198,1319,395,0)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -157,9 +157,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>429</LineNumber>
+          <LineNumber>282</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>16700</Address>
+          <Address>12136</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -168,71 +168,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>C:\Users\Miguel\Desktop\UAH\3Âº\1Âº CUATRIMESTRE\SISTEMAS ELECTRÃ“NICOS DIGITALES (600030)\Laboratorio (LAB)\Proyecto propuesto\Proyecto\Proyecto\ProjectKeil5\Src\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Sistema_Embebido\Src/main.c\429</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>418</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>16574</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>C:\Users\Miguel\Desktop\UAH\3Âº\1Âº CUATRIMESTRE\SISTEMAS ELECTRÃ“NICOS DIGITALES (600030)\Laboratorio (LAB)\Proyecto propuesto\Proyecto\Proyecto\ProjectKeil5\Src\main.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\Sistema_Embebido\Src/main.c\418</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>420</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>16618</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>C:\Users\Miguel\Desktop\UAH\3Âº\1Âº CUATRIMESTRE\SISTEMAS ELECTRÃ“NICOS DIGITALES (600030)\Laboratorio (LAB)\Proyecto propuesto\Proyecto\Proyecto\ProjectKeil5\Src\main.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\Sistema_Embebido\Src/main.c\420</Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
-          <LineNumber>416</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\Src\main.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>4</Number>
-          <Type>0</Type>
-          <LineNumber>427</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\Src\main.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\Sistema_Embebido\Src/main.c\282</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -349,13 +285,12 @@
       <pszMrulep></pszMrulep>
       <pSingCmdsp></pSingCmdsp>
       <pMultCmdsp></pMultCmdsp>
-      <LogicAnalyzers>
-        <Wi>
-          <IntNumber>0</IntNumber>
-          <FirstString>`AOUT</FirstString>
-          <SecondString>FF0000000000000000000000000000000000144000000000000000000000000000000000414F5554000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700000001000000000000000000F03F1100000000000000000000000000000000000000BA400000</SecondString>
-        </Wi>
-      </LogicAnalyzers>
+      <SystemViewers>
+        <Entry>
+          <Name>System Viewer\UART0</Name>
+          <WinId>35905</WinId>
+        </Entry>
+      </SystemViewers>
       <DebugDescription>
         <Enable>1</Enable>
         <EnableFlashSeq>0</EnableFlashSeq>

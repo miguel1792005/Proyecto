@@ -48,7 +48,8 @@
 //	----------------------------------------------------------------------------------------------------
 
 #define PI 3.1415926535897932384626433832795f
-#define K2 (8.0f * (PI/180.f))	//	CONVERSION FROM ANGLE TO DISTANCE OF WHEELS
+#define K2 (9.6f * (PI/180.f))	//	CONVERSION FROM ANGLE TO DISTANCE OF WHEELS
+#define K3 (9.2f * (PI/180.f))	//	CONVERSION FROM ANGLE TO DISTANCE OF WHEELS
 
 //	----------------------------------------------------------------------------------------------------
 //	6. UART COMMUNICATION CONSTANTS
@@ -91,7 +92,7 @@ static char lcd_buffer[256];	//	BUFFER FOR LCD TEXT
 #define SI	490
 
 #define notesnav	20
-#define notesesp	24
+#define notesesp	27
 #define notesblan	30
 #define notesb	12
 
@@ -145,7 +146,7 @@ int dist_cm, angle;	//	MOVEMENT PARAMETERS
 //	----------------------------------------------------------------------------------------------------
 
 static const uint16_t navidad[notesnav]={SOL,DO*2,DO*2,SI,DO*2,LA,LA,LA,LA,0,LA,RE*2,RE*2,DO*2,LA,SOL,SOL,SOL,SOL,0};	//	FELIZ NAVIDAD
-static const uint16_t Espana[notesesp]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,FA,FA,FA,FA,FA,FA,FA,FA};	//	ESPAÑA
+static const uint16_t Espana[notesesp]={DO*2,DO*2,SOL,SOL,MI*2,MI*2,DO*2,SOL*2,FA*2,MI*2,RE*2,DO*2,DO*2,SI,LA,SOL,DO*2,DO*2,RE*2,RE*2,MI*2,MI*2,SOL*2,FA*2,MI*2,RE*2,DO*2};	//	ESPAÑA
 static const uint16_t blanca[notesblan]={LA,LA,LA,LA,LA+20,LA,SOL+20,LA,LA+20,LA+20,LA+20,LA+20,SI,DO*2,DO*2,DO*2,DO*2,RE,MI,FA,SOL,FA,MI,RE,DO,DO,DO,DO,DO,DO};	//	OH BLANCA NAVIDAD
 static const uint16_t Beep[notesb]={600,500,600,500,600,500,600,500,600,500,600,500}; //	BEEP WHILE BACKWARDS MOVING IS PERFORMED
 static const uint16_t Silence=1;	//	SILENCE
@@ -236,7 +237,7 @@ void TIMER0_IRQHandler(){	//	GENERATE THE SOUND SIGNAL WITH DAC
 			index_song=(index_song>=(notesb-1))?0:index_song+1;			
 		}
 	}
-}	
+}
 	
 void TIMER1_IRQHandler(){	//	CONTROL TIME EACH RISING EDGE OF THE ENCODER_1 WITH CAP (CONTROL SPEED1)
 	if(LPC_TIM1->IR&((0x1<<4))){	//	INTERRUPT CAP0 (CALIB SPEED)
@@ -283,6 +284,7 @@ void UART0_IRQHandler(){	//	COMMUNICATION WITH LAVBIEW WITH USB
 		uint8_t received_char0=LPC_UART0->RBR;
 		uint8_t *temp_pointer0;
 
+		if(message==0){
 		if((received_char0!=END1)&(received_char0!=END2)){	//	IT IS EXECUTED IF THERE IS NO "LINE BREAK" IN THE MESSAGE
 			temp_pointer0=(uint8_t *)realloc((void*)rx_buffer,current_size+1);	//	INCREMENT THE DINAMIC MEMMORY WITH FC REALLOC
 			if(temp_pointer0!=NULL){	//	SAFE THE CHARACTER ON RX_BUFFER WHEN THERE IS SPACE
@@ -293,6 +295,10 @@ void UART0_IRQHandler(){	//	COMMUNICATION WITH LAVBIEW WITH USB
 		}			
 		if(((received_char0==END1)||(received_char0==END2))){	//	WHEN "LINE BREAKS" COMES THE MESSAGE IS FULL RECIVED		
 			message=1;		
+		}
+	}
+		else{
+			NVIC_SetPendingIRQ(EINT2_IRQn);	//	CHANGE THE MUSIC FROM LAVBIEW
 		}
 	}
 }
@@ -332,7 +338,7 @@ int main(){
 	Fc_config_pines();	// ALL CONFIGURATE FC
 	Fc_config_TIMER();
 	Fc_config_PWM();
-  Fc_bluetooth_communication();
+	Fc_bluetooth_communication();
 	dac_cfg();
 	adc_cfg();
 	eint1_cfg();
@@ -457,6 +463,11 @@ int main(){
 					case 'V':	//	DEFINE SPEED
 						speed=(((uint8_t)(rx_buffer[pointer_to_data+1]-'0'))*10+(uint8_t)(rx_buffer[pointer_to_data+2]-'0'));
 						pointer_to_data=pointer_to_data+Fc_speed_control(speed);
+							if(speed==0){
+							
+								pointer_to_data=current_size;
+							
+							}
 						end_move=1;
 						break;				
 					case 'D':	//	DEFINE RIGHT MOVEMENT
@@ -468,7 +479,7 @@ int main(){
 						break;				
 					case 'I':	//	DEFINE LEFT MOVEMENT
 						angle=(uint16_t)((((uint16_t)(rx_buffer[pointer_to_data+1]-'0'))*10+(uint16_t)(rx_buffer[pointer_to_data+2]-'0')));
-						set_distance(K2*angle);
+						set_distance(K3*angle);
 						Fc_reset_Tc();
 						LPC_GPIO1->FIOPIN=(LPC_GPIO1->FIOPIN&~((0x3)|(0x3<<16)))|(0x1)|(0x2<<16);
 						token=0;
