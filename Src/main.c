@@ -119,8 +119,6 @@ volatile uint8_t flagmessageUART3=0;	//	FLAG FOR SENDING MESSAGE TO LABVIEW UART
 volatile uint8_t duty;	//	VAR. THAT STORES THE PORCENTUAL SPEED RECEIVED (CHAR->UINT8_T)
 volatile uint8_t angle;	//	VAR. THAT STORES THE ANGLE RECEIVED (CHAR->UINT8_T)
 volatile uint8_t distance;	// VAR. THAT STORES THE DISTANCE RECEIVED (CHAR->UINT8_T)
-volatile float gain1=1.0f;	//	GAIN TO CALIBRATE SPEED OF WHEEL 1
-volatile float gain2=1.0f;	//	GAIN TO CALIBRATE SPEED OF WHEEL 2
 volatile uint32_t rising_edge_1=0;	//	VAR. TO STORE THE VALUE OF EDGES EACH 10MS (MOTOR 1)
 volatile uint32_t rising_edge_2=0;	//	VAR. TO STORE THE VALUE OF EDGES EACH 10MS (MOTOR 2)
 volatile float velocity1=0;	//	VAR. TO STORE VELOCITY OF MOTOR 1 (m/s)
@@ -296,7 +294,7 @@ int main(){
 	Fc_config_pines();	// ALL CONFIGURATION FC
 	Fc_config_TIMER();
 	Fc_config_PWM();
-  Fc_bluetooth_communication();
+	Fc_bluetooth_communication();
 	dac_cfg();
 	adc_cfg();
 	eint1_cfg();
