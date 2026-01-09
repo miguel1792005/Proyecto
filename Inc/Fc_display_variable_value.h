@@ -3,6 +3,6 @@
 
 #include <LPC17xx.h>
 
-void Fc_display_variable_value(uint32_t speed1,uint32_t speed2,float voltage,uint16_t Xpos,uint16_t Ypos,int line,int dist_cm,int angle,char *lcd_buffer);
+void Fc_display_variable_value(float velocity1,float velocity2,float voltage, uint8_t distance,char *lcd_buffer);
 
 #endif

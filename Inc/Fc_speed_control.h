@@ -3,6 +3,6 @@
 
 #include <LPC17xx.h>
 
-uint8_t Fc_speed_control(uint8_t velocidad);
+void Fc_speed_control(uint8_t duty_1,uint8_t duty_2,float *dprev1,float *dprev2,float *refvelocity_1,float *refvelocity_2);
 
 #endif
